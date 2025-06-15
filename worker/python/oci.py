@@ -76,12 +76,7 @@ class OCI:
 
             # ZIPファイルを解凍する
             with zipfile.ZipFile(io.BytesIO(temp_file.read()), 'r') as zip_ref:
-                print(extract_dir)
-                print(zip_ref.filelist)
                 zip_ref.extractall(extract_dir)
-
-        for f in Path("/opt/oracle/wallet").glob("*.*"):
-            print(str(f))
 
         oracledb.init_oracle_client(
             lib_dir="/opt/oracle/instantclient_19_18",
