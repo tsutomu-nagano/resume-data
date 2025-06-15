@@ -79,6 +79,7 @@ class OCI:
                 zip_ref.extractall(extract_dir)
 
 
+        print(self._wallet_dir)
 
         oracledb.init_oracle_client(
             lib_dir="/opt/oracle/instantclient_19_18",
