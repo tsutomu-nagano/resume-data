@@ -79,19 +79,14 @@ class OCI:
                 zip_ref.extractall(extract_dir)
 
 
-        print(os.path.abspath(self._wallet_dir))
 
         oracledb.init_oracle_client(
             lib_dir="/opt/oracle/instantclient_19_18",
-            config_dir=str(self._wallet_dir)
+            config_dir=str(os.path.abspath(self._wallet_dir))
         )
 
         # params = oracledb.ConnectParams(wallet_location = str(self._wallet_dir), wallet_password = self.wallet_password)
        
-
-        # host = "adb.ap-tokyo-1.oraclecloud.com"
-        # port = 1521
-        # service_name = "g60bfc2e8d9116a_statmeta_low.adb.oraclecloud.com"
 
         # dsn = f"{host}:{port}/{service_name}"
         
