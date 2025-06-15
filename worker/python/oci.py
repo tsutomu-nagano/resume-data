@@ -79,22 +79,22 @@ class OCI:
         #         zip_ref.extractall(extract_dir)
 
         oracledb.init_oracle_client(
-            # config_dir=str(self._wallet_dir)
+            config_dir=str(self._wallet_dir)
             )
 
         for f in self._wallet_dir.rglob("*"):
             if f.is_file():
                 print(f)
 
-        params = oracledb.ConnectParams(
-                    wallet_location = str(self._wallet_dir),
-                    wallet_password = self.wallet_password
-                    )
+        # params = oracledb.ConnectParams(
+        #             wallet_location = str(self._wallet_dir),
+        #             wallet_password = self.wallet_password
+        #             )
 
         # dsn = f"{host}:{port}/{service_name}"
         
-        self.connection = oracledb.connect(user=self.user, password=self.password, dsn=self.dataset_name, params=params)
-        # self.connection = oracledb.connect(user=self.user, password=self.password, dsn=self.dataset_name)
+        # self.connection = oracledb.connect(user=self.user, password=self.password, dsn=self.dataset_name, params=params)
+        self.connection = oracledb.connect(user=self.user, password=self.password, dsn=self.dataset_name)
 
         return(self)
 
