@@ -78,9 +78,9 @@ class OCI:
             with zipfile.ZipFile(io.BytesIO(temp_file.read()), 'r') as zip_ref:
                 zip_ref.extractall(extract_dir)
 
-        # oracledb.init_oracle_client(
-        #     config_dir="./wallet"
-        #     )
+        oracledb.init_oracle_client(
+            config_dir=str(self._wallet_dir / "wallet")
+            )
 
         for f in self._wallet_dir.rglob("*"):
             if f.is_file():
