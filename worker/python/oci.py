@@ -44,7 +44,7 @@ class OCI:
         self.wallet_password = wallet_password
         self._base64_wallet_text = base64_wallet_text
         self._work_dir = work_dir
-        self._wallet_dir =work_dir
+        self._wallet_dir = Path(work_dir) / wallet_name
 
 
     def __enter__(self):
@@ -78,17 +78,23 @@ class OCI:
             with zipfile.ZipFile(io.BytesIO(temp_file.read()), 'r') as zip_ref:
                 zip_ref.extractall(extract_dir)
 
-        oracledb.init_oracle_client(
-            config_dir="./wallet"
-            )
+        # oracledb.init_oracle_client(
+        #     config_dir="./wallet"
+        #     )
 
-        # params = oracledb.ConnectParams(wallet_location = str(self._wallet_dir), wallet_password = self.wallet_password)
-       
+        for f in self._wallet_dir.rglob("*"):
+            if f.is_file():
+                print(f)
+
+        params = oracledb.ConnectParams(
+                    wallet_location = str(self._wallet_dir),
+                    wallet_password = self.wallet_password
+                    )
 
         # dsn = f"{host}:{port}/{service_name}"
         
-        # self.connection = oracledb.connect(user=self.user, password=self.password, dsn=self.dataset_name, params=params)
-        self.connection = oracledb.connect(user=self.user, password=self.password, dsn=self.dataset_name)
+        self.connection = oracledb.connect(user=self.user, password=self.password, dsn=self.dataset_name, params=params)
+        # self.connection = oracledb.connect(user=self.user, password=self.password, dsn=self.dataset_name)
 
         return(self)
 
