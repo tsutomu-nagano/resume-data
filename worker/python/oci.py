@@ -49,37 +49,37 @@ class OCI:
 
     def __enter__(self):
 
-        # デコード後のZIPファイルを一時ファイルとして作成
-        with tempfile.NamedTemporaryFile(mode='w+b') as temp_file:
+        # # デコード後のZIPファイルを一時ファイルとして作成
+        # with tempfile.NamedTemporaryFile(mode='w+b') as temp_file:
 
-            # ファイル名を取得
-            temp_file_name = temp_file.name
+        #     # ファイル名を取得
+        #     temp_file_name = temp_file.name
 
-            # Base64デコードして元のバイナリデータに戻す
-            decoded = base64.b64decode(self._base64_wallet_text)
+        #     # Base64デコードして元のバイナリデータに戻す
+        #     decoded = base64.b64decode(self._base64_wallet_text)
            
-            # 一時ファイルにデータを書き込む
-            temp_file.write(decoded)
+        #     # 一時ファイルにデータを書き込む
+        #     temp_file.write(decoded)
             
-            # ファイルポインタを先頭に戻す
-            temp_file.seek(0)
+        #     # ファイルポインタを先頭に戻す
+        #     temp_file.seek(0)
 
-            # 解凍先のディレクトリのパス
-            extract_dir = self._wallet_dir
+        #     # 解凍先のディレクトリのパス
+        #     extract_dir = self._wallet_dir
 
-            # 解凍先のディレクトリが存在する場合は削除
-            if os.path.exists(extract_dir):
-                shutil.rmtree(extract_dir)
+        #     # 解凍先のディレクトリが存在する場合は削除
+        #     if os.path.exists(extract_dir):
+        #         shutil.rmtree(extract_dir)
 
-            # 解凍先のディレクトリを作成
-            os.makedirs(extract_dir)
+        #     # 解凍先のディレクトリを作成
+        #     os.makedirs(extract_dir)
 
-            # ZIPファイルを解凍する
-            with zipfile.ZipFile(io.BytesIO(temp_file.read()), 'r') as zip_ref:
-                zip_ref.extractall(extract_dir)
+        #     # ZIPファイルを解凍する
+        #     with zipfile.ZipFile(io.BytesIO(temp_file.read()), 'r') as zip_ref:
+        #         zip_ref.extractall(extract_dir)
 
         oracledb.init_oracle_client(
-            config_dir=str(self._wallet_dir / "wallet")
+            config_dir=str(self._wallet_dir)
             )
 
         for f in self._wallet_dir.rglob("*"):
@@ -87,7 +87,7 @@ class OCI:
                 print(f)
 
         params = oracledb.ConnectParams(
-                    wallet_location = str(self._wallet_dir / "wallet"),
+                    wallet_location = str(self._wallet_dir),
                     wallet_password = self.wallet_password
                     )
 
