@@ -81,6 +81,8 @@ class OCI:
         for f in Path("/opt/oracle/instantclient_19_18").glob("*.*"):
             print(str(f))
 
+        print(os.environ["LD_LIBRARY_PATH"])
+
         oracledb.init_oracle_client(
             lib_dir="/opt/oracle/instantclient_19_18",
             config_dir=str(self._wallet_dir)
