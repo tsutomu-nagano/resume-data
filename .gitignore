@@ -1,4 +1,8 @@
 # local env files
 .env*.local
 
+wallet_b64.txt
+
+wallet/
+
 __pycache__
