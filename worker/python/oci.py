@@ -78,12 +78,13 @@ class OCI:
             with zipfile.ZipFile(io.BytesIO(temp_file.read()), 'r') as zip_ref:
                 zip_ref.extractall(extract_dir)
 
-
+        for f in self._wallet_dir.glob("*.*"):
+            print(f)
 
         oracledb.init_oracle_client(
             lib_dir="/opt/oracle/instantclient_19_18",
-            config_dir=str(os.path.abspath(self._wallet_dir))
-        )
+            config_dir="/opt/oracle/wallet"
+            )
 
         # params = oracledb.ConnectParams(wallet_location = str(self._wallet_dir), wallet_password = self.wallet_password)
        
