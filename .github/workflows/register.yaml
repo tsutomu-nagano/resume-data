@@ -48,6 +48,9 @@ jobs:
 
       - name: "Oracle DB へのデータ挿入"
         run: |
+          echo "$ORACLE_WALLET_BASE64" | base64 --decode > wallet.zip
+          unzip wallet.zip .
+          ls -l .
           export LD_LIBRARY_PATH=./instantclient_19_18
           python ./worker/python/register.py
 
