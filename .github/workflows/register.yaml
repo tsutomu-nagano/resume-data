@@ -36,6 +36,6 @@ jobs:
       #   uses: r-lib/actions/setup-renv@v2
 
       - name: Run R script for Register e-Stat Data
-        run:  Rscript ./R/register.R $ROOT_DIR
+        run:  Rscript ./worker/R/register.R $ROOT_DIR
 
 

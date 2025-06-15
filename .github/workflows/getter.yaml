@@ -19,7 +19,6 @@ jobs:
 
     env:
       APPID: ${{ secrets.APPID_ESTATAPI }}
-      PG_DATABSE_URL: ${{ secrets.PG_DATABSE_URL }}
       ROOT_DIR: ./resource
     steps:
       - name: Checkout repository
@@ -36,7 +35,7 @@ jobs:
         # uses: r-lib/actions/setup-renv@v2
 
       - name: Run R script for Get e-Stat Data
-        run:  Rscript ./R/getter.R $ROOT_DIR
+        run:  Rscript ./worker/R/getter.R $ROOT_DIR
 
       # - name: Run R script for Get e-Stat Data
       #   run:  ls ./resource -R -all
@@ -57,4 +56,4 @@ jobs:
         uses: ad-m/github-push-action@v0.8.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: main      
+          branch: main
