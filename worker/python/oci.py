@@ -80,9 +80,8 @@ class OCI:
                 print(zip_ref.filelist)
                 zip_ref.extractall(extract_dir)
 
-        print(self._wallet_dir)
-        for f in self._wallet_dir.glob("*.*"):
-            print(f)
+        for f in Path("/opt/oracle/wallet").glob("*.*"):
+            print(str(f))
 
         oracledb.init_oracle_client(
             lib_dir="/opt/oracle/instantclient_19_18",
