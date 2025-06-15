@@ -78,6 +78,7 @@ class OCI:
             with zipfile.ZipFile(io.BytesIO(temp_file.read()), 'r') as zip_ref:
                 zip_ref.extractall(extract_dir)
 
+        print(self._wallet_dir)
         for f in self._wallet_dir.glob("*.*"):
             print(f)
 
