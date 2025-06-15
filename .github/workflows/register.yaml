@@ -40,9 +40,6 @@ jobs:
           unzip instantclient-sdk-linux.x64-19.18.0.0.0dbru.zip
           rm *.zip
 
-      - name: "oracle確認"
-        run: ls /opt/oracle/instantclient_19_18/libnnz19.so
-
       - name: "Pythonライブラリのインストール"
         run: |  
           pip install --no-cache-dir -r ./worker/python/requirements.txt
