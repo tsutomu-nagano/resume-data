@@ -1,0 +1,24 @@
+services:
+  app:
+    build:
+      context: ./worker/python
+      dockerfile: Dockerfile
+    image: py2oracle
+    container_name: py2oracle
+
+    environment:
+      - LD_LIBRARY_PATH=/opt/oracle/instantclient_19_18
+      - PATH=/opt/oracle/instantclient_19_18:$PATH
+
+    env_file:
+      - .env.local
+
+    working_dir: /app
+
+    tty: true
+    stdin_open: true
+
+    volumes:
+      - .:/app
+
+    command: "/bin/bash"

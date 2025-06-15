@@ -59,19 +59,40 @@ un = os.environ["ORACLE_USER"]
 pw = os.environ["ORACLE_PASSWORD"]
 dsn = os.environ["ORACLE_DSN"]
 wallet_pw = os.environ["ORACLE_WALLET_PASSWORD"]
-
-encoded_data = os.environ["ORACLE_WALLET_ENCODED"]
+encoded_data = os.environ["ORACLE_WALLET_BASE64"]
 
 
 with OCI(base64_wallet_text=encoded_data,
          user = un, password = pw, dataset_name = dsn, wallet_password = wallet_pw) as oci:
 
-    oci.migration("./python/migrations", is_up = False)
-    oci.migration("./python/migrations", is_up = True)
+
+    # oci.migration("./worker/python/migrations", is_up = False)
+    # oci.migration("./worker/python/migrations", is_up = True)
+
+    # テーブルの削除
+    table_names: str = [
+        "dimension_item",
+        "table_dimension",
+        "dimensionlist",
+        "table_measure",
+        "measurelist",
+        "table_tag",
+        "taglist",
+        "table_region",
+        "region_item",
+        "regionlist",
+        "tablelist",
+        "statlist",
+        "govlist"
+        ]
+
+    for table_name in table_names:
+        oci.delete(table_name)
 
 
     # 府省／統計の一覧
     statlist_base = pd.read_csv(f"{src_dir}/statlist.csv", dtype =str)
+
 
     govlist = statlist_base[["govcode","govname"]].drop_duplicates()
     statlist = statlist_base[["statcode","statname","govcode"]].drop_duplicates()
@@ -105,6 +126,7 @@ with OCI(base64_wallet_text=encoded_data,
         )
 
 
+
     oci.insert_from_df(name = "taglist", df = pd.concat(table_tags)[["TAG_NAME"]].drop_duplicates())
     [oci.insert_from_df(name = "table_tag", df = table_tag) for table_tag in table_tags]
 
@@ -114,11 +136,12 @@ with OCI(base64_wallet_text=encoded_data,
                 )
 
 
+
+
     dimensions = []    
     measures = []
     regions = []
     for meta in metas:
-
        
         measures.append(
             meta.pipe(lambda df: df[df["class_type"] == "tab"]) \
@@ -142,6 +165,7 @@ with OCI(base64_wallet_text=encoded_data,
 
 
     measures_base = pd.concat(measures)
+
 
     oci.insert_from_df(name = "measurelist", df = measures_base[["name"]].drop_duplicates())
     oci.insert_from_df(name = "table_measure", df = measures_base[["STATDISPID","name"]].drop_duplicates())

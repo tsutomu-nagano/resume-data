@@ -79,9 +79,23 @@ class OCI:
                 zip_ref.extractall(extract_dir)
 
 
-        params = oracledb.ConnectParams(wallet_location = str(self._wallet_dir), wallet_password = self.wallet_password)
+
+        oracledb.init_oracle_client(
+            lib_dir="/opt/oracle/instantclient_19_18",
+            config_dir="/app/worker/python/wallet"
+        )
+
+        # params = oracledb.ConnectParams(wallet_location = str(self._wallet_dir), wallet_password = self.wallet_password)
        
-        self.connection = oracledb.connect(user=self.user, password=self.password, dsn=self.dataset_name, params=params)
+
+        # host = "adb.ap-tokyo-1.oraclecloud.com"
+        # port = 1521
+        # service_name = "g60bfc2e8d9116a_statmeta_low.adb.oraclecloud.com"
+
+        # dsn = f"{host}:{port}/{service_name}"
+        
+        # self.connection = oracledb.connect(user=self.user, password=self.password, dsn=self.dataset_name, params=params)
+        self.connection = oracledb.connect(user=self.user, password=self.password, dsn=self.dataset_name)
 
         return(self)
 
@@ -89,6 +103,27 @@ class OCI:
     def set_logger(self,logger: Callable[[str], None]):
         self.logger = logger
     
+
+    def get_tables(self):
+        cursor = self.connection.cursor()
+
+        # ログインユーザーの所有するテーブル一覧を取得
+        cursor.execute("SELECT table_name FROM user_tables")
+
+        tables = cursor.fetchall()
+        for table in tables:
+            print(table[0])
+
+        cursor.close()
+
+    def delete(self, name:str):
+        with self.connection.cursor() as cursor:
+            sql_delete: str =  f"DELETE FROM {name}"
+            cursor.execute(sql_delete)
+            self.connection.commit()
+
+        self.logger(f"{name} Deleted")
+
     def insert_from_df(self, name:str, df:pd.DataFrame, batch_size: int = 0):
         
         if len(df) >= 1:
