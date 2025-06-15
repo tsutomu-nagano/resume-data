@@ -29,7 +29,7 @@ jobs:
 
       - name: "Oracle Instant Client のダウンロードと展開（任意のバージョンを選んでOK）"
         run: |
-          WORKDIR /opt/oracle
+          mkdir -p /opt/oracle
           RUN wget https://download.oracle.com/otn_software/linux/instantclient/1918000/instantclient-basic-linux.x64-19.18.0.0.0dbru.zip && \
               wget https://download.oracle.com/otn_software/linux/instantclient/1918000/instantclient-sdk-linux.x64-19.18.0.0.0dbru.zip && \
               unzip instantclient-basic-linux.x64-19.18.0.0.0dbru.zip && \
