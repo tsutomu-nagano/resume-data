@@ -29,12 +29,12 @@ jobs:
 
       - name: "Oracle Instant Client のダウンロードと展開（任意のバージョンを選んでOK）"
         run: |
-          mkdir -p /opt/oracle
-          RUN wget https://download.oracle.com/otn_software/linux/instantclient/1918000/instantclient-basic-linux.x64-19.18.0.0.0dbru.zip && \
-              wget https://download.oracle.com/otn_software/linux/instantclient/1918000/instantclient-sdk-linux.x64-19.18.0.0.0dbru.zip && \
-              unzip instantclient-basic-linux.x64-19.18.0.0.0dbru.zip && \
-              unzip instantclient-sdk-linux.x64-19.18.0.0.0dbru.zip && \
-              rm *.zip
+          mkdir -p /opt/oracle && cd /opt/oracle
+          wget https://download.oracle.com/otn_software/linux/instantclient/1918000/instantclient-basic-linux.x64-19.18.0.0.0dbru.zip
+          wget https://download.oracle.com/otn_software/linux/instantclient/1918000/instantclient-sdk-linux.x64-19.18.0.0.0dbru.zip
+          unzip instantclient-basic-linux.x64-19.18.0.0.0dbru.zip
+          unzip instantclient-sdk-linux.x64-19.18.0.0.0dbru.zip
+          rm *.zip
 
       - name: "環境変数の設定"
         run: |
