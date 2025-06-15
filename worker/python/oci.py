@@ -87,7 +87,7 @@ class OCI:
                 print(f)
 
         params = oracledb.ConnectParams(
-                    wallet_location = str(self._wallet_dir),
+                    wallet_location = str(self._wallet_dir / "wallet"),
                     wallet_password = self.wallet_password
                     )
 
