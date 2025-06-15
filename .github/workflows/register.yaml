@@ -48,7 +48,7 @@ jobs:
 
       - name: "Oracle DB へのデータ挿入"
         run: |
-          export LD_LIBRARY_PATH=./worker/python/instantclient_19_18
+          export LD_LIBRARY_PATH=./instantclient_19_18
           python ./worker/python/register.py
 
 

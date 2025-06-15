@@ -79,8 +79,7 @@ class OCI:
                 zip_ref.extractall(extract_dir)
 
         oracledb.init_oracle_client(
-            # lib_dir="/usr/local/oracle/instantclient_19_18",
-            config_dir="./worker/python/wallet"
+            config_dir="./wallet"
             )
 
         # params = oracledb.ConnectParams(wallet_location = str(self._wallet_dir), wallet_password = self.wallet_password)
