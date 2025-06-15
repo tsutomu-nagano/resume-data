@@ -76,6 +76,8 @@ class OCI:
 
             # ZIPファイルを解凍する
             with zipfile.ZipFile(io.BytesIO(temp_file.read()), 'r') as zip_ref:
+                print(extract_dir)
+                print(zip_ref.filelist)
                 zip_ref.extractall(extract_dir)
 
         print(self._wallet_dir)

@@ -7,4 +7,4 @@ zip -r wallet.zip ./wallet
 base64 wallet.zip > wallet_b64.txt
 
 # （不要なら zip ファイルを削除）
-rm wallet.zip
+# rm wallet.zip
