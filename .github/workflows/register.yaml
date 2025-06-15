@@ -32,7 +32,8 @@ jobs:
 
       - name: "Oracle Instant Client のダウンロードと展開（任意のバージョンを選んでOK）"
         run: |
-          mkdir -p /opt/oracle && cd /opt/oracle
+          mkdir -p /usr/local/oracle
+          cd /usr/local/oracle
           wget https://download.oracle.com/otn_software/linux/instantclient/1918000/instantclient-basic-linux.x64-19.18.0.0.0dbru.zip
           wget https://download.oracle.com/otn_software/linux/instantclient/1918000/instantclient-sdk-linux.x64-19.18.0.0.0dbru.zip
           unzip instantclient-basic-linux.x64-19.18.0.0.0dbru.zip
@@ -48,7 +49,7 @@ jobs:
 
       - name: "Oracle DB へのデータ挿入"
         env:
-          LD_LIBRARY_PATH: /opt/oracle/instantclient_19_18 
+          LD_LIBRARY_PATH: /usr/local/oracle/instantclient_19_18
         run: |
           python ./worker/python/register.py
 

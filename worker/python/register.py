@@ -64,9 +64,9 @@ encoded_data = os.environ["ORACLE_WALLET_BASE64"]
 
 with OCI(base64_wallet_text=encoded_data,
          user = un, password = pw, dataset_name = dsn, wallet_password = wallet_pw,
-         work_dir = "/opt/oracle") as oci:
+         work_dir = "/usr/local/oracle") as oci:
 
-    
+
     # oci.migration("./worker/python/migrations", is_up = False)
     # oci.migration("./worker/python/migrations", is_up = True)
 
