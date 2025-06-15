@@ -12,7 +12,6 @@ jobs:
     container:
       image: python:3.11-slim
 
-
     env:
       ORACLE_USER: ${{ secrets.ORACLE_USER }}
       ORACLE_PASSWORD: ${{ secrets.ORACLE_PASSWORD }}

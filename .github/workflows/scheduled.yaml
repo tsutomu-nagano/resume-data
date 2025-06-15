@@ -13,7 +13,8 @@ jobs:
       APPID_ESTATAPI: ${{ secrets.APPID_ESTATAPI }}
       PG_DATABSE_URL: ${{ secrets.PG_DATABSE_URL }}
       
-  # register:
-  #   needs: getter
-  #   uses: ./.github/workflows/register.yaml
+  register:
+    needs: getter
+    uses: ./.github/workflows/register.yaml
+
 
