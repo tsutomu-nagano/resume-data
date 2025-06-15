@@ -44,7 +44,7 @@ class OCI:
         self.wallet_password = wallet_password
         self._base64_wallet_text = base64_wallet_text
         self._work_dir = work_dir
-        self._wallet_dir = Path(work_dir) / wallet_name
+        self._wallet_dir =work_dir
 
 
     def __enter__(self):
