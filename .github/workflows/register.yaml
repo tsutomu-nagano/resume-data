@@ -39,6 +39,7 @@ jobs:
           unzip instantclient-basic-linux.x64-19.18.0.0.0dbru.zip
           unzip instantclient-sdk-linux.x64-19.18.0.0.0dbru.zip
           rm *.zip
+          mv /usr/local/oracle/instantclient_19_18 ./worker/python/instantclient_19_18
 
       - name: "Pythonライブラリのインストール"
         run: |  
@@ -46,8 +47,7 @@ jobs:
 
       - name: "Oracle DB へのデータ挿入"
         run: |
-          export LD_LIBRARY_PATH=/usr/local/oracle/instantclient_19_18
-          export PATH=$LD_LIBRARY_PATH:$PATH
+          export LD_LIBRARY_PATH=./worker/python/instantclient_19_18
           python ./worker/python/register.py
 
 
