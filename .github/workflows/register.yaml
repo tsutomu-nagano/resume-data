@@ -45,10 +45,9 @@ jobs:
           pip install --no-cache-dir -r ./worker/python/requirements.txt
 
       - name: "Oracle DB へのデータ挿入"
-        env:
-          LD_LIBRARY_PATH: /usr/local/oracle/instantclient_19_18
-          PATH: $LD_LIBRARY_PATH:$PATH
         run: |
+          export LD_LIBRARY_PATH=/usr/local/oracle/instantclient_19_18
+          export PATH=$LD_LIBRARY_PATH:$PATH
           python ./worker/python/register.py
 
 
