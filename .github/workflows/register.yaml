@@ -1,0 +1,41 @@
+name: Register Postgres
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+jobs:
+
+  register:
+    runs-on: ubuntu-latest
+
+    container:
+      image: rocker/tidyverse:4.2.2
+
+    env:
+      APPID: ${{ secrets.APPID_ESTATAPI }}
+      DB_HOST: ${{ secrets.DB_HOST }}
+      DB_USER: ${{ secrets.DB_USER }}
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      DB_NAME: ${{ secrets.DB_NAME }}
+      ROOT_DIR: ./resource
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # - name: Set up R
+      #   uses: r-lib/actions/setup-r@v2
+      #   with:
+      #     r-version: '4.2.2' # The R version to download (if necessary) and use.
+      #     # Use "renv" to retrieve R version recorded in renv.lock file.
+
+      - name: Install packages
+        run: install2.r RPostgreSQL
+      # - name: Install packages
+      #   uses: r-lib/actions/setup-renv@v2
+
+      - name: Run R script for Register e-Stat Data
+        run:  Rscript ./R/register.R $ROOT_DIR
+
+
