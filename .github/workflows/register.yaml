@@ -38,14 +38,15 @@ jobs:
 
       - name: "環境変数の設定"
         run: |
-          ENV LD_LIBRARY_PATH=/opt/oracle/instantclient_19_18
-          ENV PATH=$LD_LIBRARY_PATH:$PATH
+          export LD_LIBRARY_PATH=/opt/oracle/instantclient_19_18
+          export PATH=$LD_LIBRARY_PATH:$PATH
 
       - name: "Pythonライブラリのインストール"
         run: |  
-          RUN pip install --no-cache-dir -r ./worker/python/requirements.txt
+          pip install --no-cache-dir -r ./worker/python/requirements.txt
 
       - name: "Oracle DB へのデータ挿入"
-        run: python ./worker/python/register.py
+        run: |
+          python ./worker/python/register.py
 
 
