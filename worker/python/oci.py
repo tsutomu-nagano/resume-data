@@ -79,7 +79,7 @@ class OCI:
         #         zip_ref.extractall(extract_dir)
 
         oracledb.init_oracle_client(
-            config_dir=str(self._wallet_dir)
+            # config_dir=str(self._wallet_dir)
             )
 
         for f in self._wallet_dir.rglob("*"):
