@@ -22,6 +22,9 @@ jobs:
       ROOT_DIR: ./resource
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: "必要パッケージのインストール" 
         run: | 
           apt-get update && apt-get install -y unzip libaio1 wget
