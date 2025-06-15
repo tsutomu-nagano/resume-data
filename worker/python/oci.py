@@ -78,6 +78,9 @@ class OCI:
         #     with zipfile.ZipFile(io.BytesIO(temp_file.read()), 'r') as zip_ref:
         #         zip_ref.extractall(extract_dir)
 
+
+        print(str(self._wallet_dir.resolve()))
+        
         oracledb.init_oracle_client(
             config_dir=str(self._wallet_dir.resolve())
             )
