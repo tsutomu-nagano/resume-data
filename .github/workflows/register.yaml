@@ -38,10 +38,6 @@ jobs:
           unzip instantclient-sdk-linux.x64-19.18.0.0.0dbru.zip
           rm *.zip
 
-      - name: "権限確認"
-        run: |  
-          ls -l .
-
       - name: "Pythonライブラリのインストール"
         run: |  
           pip install --no-cache-dir -r ./worker/python/requirements.txt
@@ -50,7 +46,6 @@ jobs:
         run: |
           echo "$ORACLE_WALLET_BASE64" | base64 --decode > wallet.zip
           unzip wallet.zip -d .
-          ls -l .
           chown -R $(whoami):$(whoami) ./wallet
           export LD_LIBRARY_PATH=./instantclient_19_18
           python ./worker/python/register.py
