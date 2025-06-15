@@ -42,17 +42,14 @@ jobs:
       - name: "oracle確認"
         run: ls /opt/oracle/instantclient_19_18/libnnz19.so
 
-      - name: "環境変数の設定"
-        run: |
-          export LD_LIBRARY_PATH=/opt/oracle/instantclient_19_18
-          export PATH=$LD_LIBRARY_PATH:$PATH
-
       - name: "Pythonライブラリのインストール"
         run: |  
           pip install --no-cache-dir -r ./worker/python/requirements.txt
 
       - name: "Oracle DB へのデータ挿入"
         run: |
+          export LD_LIBRARY_PATH=/opt/oracle/instantclient_19_18
+          export PATH=$LD_LIBRARY_PATH:$PATH
           python ./worker/python/register.py
 
 
