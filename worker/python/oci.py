@@ -82,7 +82,7 @@ class OCI:
 
         oracledb.init_oracle_client(
             lib_dir="/opt/oracle/instantclient_19_18",
-            config_dir="/app/worker/python/wallet"
+            config_dir=self._wallet_dir
         )
 
         # params = oracledb.ConnectParams(wallet_location = str(self._wallet_dir), wallet_password = self.wallet_password)
