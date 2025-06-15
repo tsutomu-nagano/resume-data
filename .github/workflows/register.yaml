@@ -33,13 +33,17 @@ jobs:
       - name: "Oracle Instant Client のダウンロードと展開（任意のバージョンを選んでOK）"
         run: |
           mkdir -p /usr/local/oracle
-          cd /usr/local/oracle
+          mkdir -p ./worker/python
+          cd ./worker/python
           wget https://download.oracle.com/otn_software/linux/instantclient/1918000/instantclient-basic-linux.x64-19.18.0.0.0dbru.zip
           wget https://download.oracle.com/otn_software/linux/instantclient/1918000/instantclient-sdk-linux.x64-19.18.0.0.0dbru.zip
           unzip instantclient-basic-linux.x64-19.18.0.0.0dbru.zip
           unzip instantclient-sdk-linux.x64-19.18.0.0.0dbru.zip
           rm *.zip
-          mv /usr/local/oracle/instantclient_19_18 ./worker/python/instantclient_19_18
+
+      - name: "権限確認"
+        run: |  
+          ls -l ./worker/python/instantclient_19_18
 
       - name: "Pythonライブラリのインストール"
         run: |  
