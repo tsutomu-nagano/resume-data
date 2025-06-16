@@ -5,14 +5,15 @@ on:
     secrets:
       APPID_ESTATAPI:
         required: true
-      PG_DATABSE_URL:
-        required: true
   workflow_dispatch:
 
 jobs:
 
   getter:
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: write  
 
     container:
       image: rocker/tidyverse:4.2.2
