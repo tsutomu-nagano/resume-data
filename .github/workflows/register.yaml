@@ -43,7 +43,7 @@ jobs:
 
       - name: "Oracle DB へのデータ挿入"
         run: |
-          echo $ORACLE_WALLET_BASE64 | base64 -d > wallet.zip
+          echo "$ORACLE_WALLET_BASE64" | base64 -d > wallet.zip
           unzip wallet.zip -d .
           chown -R $(whoami):$(whoami) ./wallet
           export LD_LIBRARY_PATH=./instantclient_19_18
