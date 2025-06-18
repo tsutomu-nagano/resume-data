@@ -17,5 +17,6 @@ jobs:
   register:
     needs: getter
     uses: ./.github/workflows/register.yaml
+    secrets: inherit
 
 
