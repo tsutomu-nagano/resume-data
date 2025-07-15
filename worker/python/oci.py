@@ -119,7 +119,7 @@ class OCI:
 
     def delete(self, name:str):
         with self.connection.cursor() as cursor:
-            sql_delete: str =  f"DELETE FROM {name}"
+            sql_delete: str =  f"TRUNCATE TABLE {name}"
             cursor.execute(sql_delete)
             self.connection.commit()
 
