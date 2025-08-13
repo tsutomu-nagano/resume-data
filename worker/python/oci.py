@@ -125,10 +125,13 @@ class OCI:
 
         self.logger(f"{name} Deleted")
 
-    def insert_from_df(self, name:str, df:pd.DataFrame, batch_size: int = 0):
+    def insert_from_df(self, name:str, df:pd.DataFrame, source :str = "", batch_size: int = 0):
         
         if len(df) >= 1:
             
+            if source != "":
+                self.logger(f"{source}")
+
             self.logger(f"{name} Insert Start : {len(df)} Record")
             
             columns = df.columns.values

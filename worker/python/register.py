@@ -50,7 +50,7 @@ def get_datas(files: Iterable[Path], formats: List[PandasPipeFunc] = None) -> It
             for format in formats:
                 df = df.pipe(format)         
         
-        yield df
+        yield {"filename": Path(f).name, "data": df}
 
 
 src_dir = "./resource"
@@ -101,22 +101,16 @@ with OCI(base64_wallet_text=encoded_data,
     oci.insert_from_df(name = "statlist", df = statlist)
 
     # 統計データの一覧
-    tables = get_datas(
-                files = Path(f"{src_dir}/tables").glob("*.*")
-                )
-                # formats = [
-                #     lambda df: select(df, names = ["statcode", "STATDISPID","^TITLE$","CYCLE","SURVEY_DATE"]),
-                #     lambda df: df.drop_duplicates().fillna("-")
-                # ])
-
     table_tags = []
-    for table in tables:
+    for item in get_datas(files = Path(f"{src_dir}/tables").glob("*.*")):
         
+        table = item["data"]
+
         tablelist = table.pipe(select, names = ["statcode", "STATDISPID","^TITLE$","CYCLE","SURVEY_DATE"]) \
                         .fillna("-") \
                         .drop_duplicates()
 
-        oci.insert_from_df(name = "tablelist", df = tablelist)
+        oci.insert_from_df(name = "tablelist", df = tablelist, source = item["filename"])
 
         table_tags.append(table.pipe(select, names = ["STATDISPID", "^STATISTICS_NAME_SPEC."]) \
                         .melt(id_vars = "STATDISPID", value_name = "TAG_NAME") \
@@ -132,18 +126,14 @@ with OCI(base64_wallet_text=encoded_data,
     [oci.insert_from_df(name = "table_tag", df = table_tag) for table_tag in table_tags]
 
 
-    metas = get_datas(
-                files = Path(f"{src_dir}/meta").glob("*.*")
-                )
-
-
-
 
     dimensions = []    
     measures = []
     regions = []
-    for meta in metas:
+    for item in get_datas(files = Path(f"{src_dir}/meta").glob("*.*")):
        
+        meta = item["data"]
+
         measures.append(
             meta.pipe(lambda df: df[df["class_type"] == "tab"]) \
                                     .pipe(select, names = ["STATDISPID", "^name$"]) \
