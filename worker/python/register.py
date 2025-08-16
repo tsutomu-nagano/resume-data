@@ -108,16 +108,18 @@ with OCI(base64_wallet_text=encoded_data,
 
         tablelist = table.pipe(select, names = ["statcode", "STATDISPID","^TITLE$","CYCLE","SURVEY_DATE"]) \
                         .fillna("-") \
-                        .drop_duplicates()
+                        .drop_duplicates() \
+                        .merge(statlist[["statcode"]], on="statcode", how="inner")
 
-        oci.insert_from_df(name = "tablelist", df = tablelist, source = item["filename"])
+        if len(tablelist) > 0:
+            oci.insert_from_df(name = "tablelist", df = tablelist, source = item["filename"])
 
-        table_tags.append(table.pipe(select, names = ["STATDISPID", "^STATISTICS_NAME_SPEC."]) \
-                        .melt(id_vars = "STATDISPID", value_name = "TAG_NAME") \
-                        .pipe(select, names = ["STATDISPID", "TAG_NAME"]) \
-                        .fillna("") \
-                        .pipe(lambda df: df[df["TAG_NAME"] != ""]) \
-                        .drop_duplicates()                            
+            table_tags.append(table.pipe(select, names = ["STATDISPID", "^STATISTICS_NAME_SPEC."]) \
+                            .melt(id_vars = "STATDISPID", value_name = "TAG_NAME") \
+                            .pipe(select, names = ["STATDISPID", "TAG_NAME"]) \
+                            .fillna("") \
+                            .pipe(lambda df: df[df["TAG_NAME"] != ""]) \
+                            .drop_duplicates()                            
         )
 
 
@@ -132,7 +134,8 @@ with OCI(base64_wallet_text=encoded_data,
     regions = []
     for item in get_datas(files = Path(f"{src_dir}/meta").glob("*.*")):
        
-        meta = item["data"]
+        meta = item["data"].merge(statlist[["statcode"]], on="statcode", how="inner")
+
 
         measures.append(
             meta.pipe(lambda df: df[df["class_type"] == "tab"]) \
