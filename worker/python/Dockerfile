@@ -2,8 +2,10 @@ FROM python:3.11-slim
 
 # 必要パッケージのインストール
 RUN apt-get update && apt-get install -y \
-    unzip libaio1 wget && \
-    rm -rf /var/lib/apt/lists/*
+    unzip wget
+RUN wget http://deb.debian.org/debian/pool/main/liba/libaio/libaio1_0.3.113-4_amd64.deb
+RUN apt-get install ./libaio1_0.3.113-4_amd64.deb
+RUN rm -rf /var/lib/apt/lists/*
 
 # Oracle Instant Client のダウンロードと展開（任意のバージョンを選んでOK）
 WORKDIR /opt/oracle
