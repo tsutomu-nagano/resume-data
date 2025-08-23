@@ -9,6 +9,10 @@ import os
 import re
 import logging
 
+periods = ["0000","0103","0101","0202","0303","0406","0404","0505","0606","0709","0707","0808","0909","1012","1010","1111","1212"]
+timeptn = f'[12]\d{{3}}[01][012](?:{"|".join(periods)})'
+
+
 PandasPipeFunc = Callable[[pd.DataFrame], pd.DataFrame]
 
 # ロガーを作成
@@ -132,6 +136,7 @@ with OCI(base64_wallet_text=encoded_data,
     dimensions = []    
     measures = []
     regions = []
+    times = []
     for item in get_datas(files = Path(f"{src_dir}/meta").glob("*.*")):
        
         meta = item["data"].merge(statlist[["statcode"]], on="statcode", how="inner")
@@ -152,9 +157,18 @@ with OCI(base64_wallet_text=encoded_data,
                         
 
         regions.append(
-                meta.pipe(lambda df: df[df["class_type"].str.startswith("area")]) \
-                    .pipe(select, names = ["STATDISPID", "class_name", "^name$"]) \
+                meta.pipe(lambda df: df[df["class_type"].str.startswith("area")]) 
+                    .pipe(select, names = ["STATDISPID", "class_name", "^name$"]) 
                     .drop_duplicates()
+        )
+
+        times.append(
+                meta.pipe(lambda df: df[df["class_type"].str.startswith("time")]) 
+                    .pipe(select, names = ["STATDISPID", "code"]) 
+                    .pipe(lambda df: df[df["code"].str.contains(timeptn, regex=True, na=False)]) 
+                    .drop_duplicates()
+                    .rename(columns={"code": "year"})
+                    .assign(period_type="00", quarter = 0, month = 0)
         )
 
 
@@ -176,6 +190,9 @@ with OCI(base64_wallet_text=encoded_data,
     oci.insert_from_df(name = "regionlist", df = regions_base[["class_name"]].drop_duplicates())
     oci.insert_from_df(name = "table_region", df = regions_base[["STATDISPID","class_name"]].drop_duplicates())
     oci.insert_from_df(name = "region_item", df = regions_base[["class_name","name"]].fillna("NA").drop_duplicates(), batch_size = 100000)
+
+    times_base = pd.concat(times)
+    oci.insert_from_df(name = "table_time", df = regions_base[["STATDISPID","year","period_type","quarter", "month"]].drop_duplicates())
 
 
 ## 7. dimensionlist
