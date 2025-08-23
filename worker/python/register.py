@@ -94,7 +94,7 @@ def get_term_and_month(row: pd.Series) -> pd.Series:
                     term = "Q3"
 
 
-    return pd.Series({"TERM": term, "MONTH": month})
+    return pd.Series({"term": term, "month": month})
 
 
 
@@ -239,7 +239,7 @@ with OCI(base64_wallet_text=encoded_data,
     oci.insert_from_df(name = "region_item", df = regions_base[["class_name","name"]].fillna("NA").drop_duplicates(), batch_size = 100000)
 
     times_base = pd.concat(times)
-    oci.insert_from_df(name = "table_time", df = times_base[["STATDISPID","year","period_type","quarter", "month"]].drop_duplicates())
+    oci.insert_from_df(name = "table_time", df = times_base[["STATDISPID","year","period_type","term", "month"]].drop_duplicates())
 
 
 ## 7. dimensionlist
