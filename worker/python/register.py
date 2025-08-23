@@ -62,6 +62,9 @@ def get_term_and_month(row: pd.Series) -> pd.Series:
     m1 = row["month_range"][:2]
     m2 = row["month_range"][2:4]
 
+    month = "00"
+    term = "00"
+
     if m1 == m2 and m1 != "00":
         month = m1
         term = "00"
