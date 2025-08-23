@@ -57,6 +57,44 @@ def get_datas(files: Iterable[Path], formats: List[PandasPipeFunc] = None) -> It
         yield {"filename": Path(f).name, "data": df}
 
 
+def get_term_and_month(row: pd.Series) -> pd.Series:
+
+    m1 = row["month_range"][:2]
+    m2 = row["month_range"][2:4]
+
+    if m1 == m2 and m1 != "00":
+        month = m1
+        term = "00"
+    else:
+        month = "00"
+        if row["half"] != "0":
+            term = f'H{row["half"]}'
+        else:
+            if row["period_type"] == "CY":
+                if m1 == "01":
+                    term = "Q1"
+                elif m1 == "04":
+                    term = "Q2"
+                elif m1 == "07":
+                    term = "Q3"
+                elif m1 == "10":
+                    term = "Q4"
+
+            if row["period_type"] == "FY":
+                if m1 == "01":
+                    term = "Q4"
+                elif m1 == "04":
+                    term = "Q1"
+                elif m1 == "07":
+                    term = "Q2"
+                elif m1 == "10":
+                    term = "Q3"
+
+
+    return pd.Series({"TERM": term, "MONTH": month})
+
+
+
 src_dir = "./resource"
 
 un = os.environ["ORACLE_USER"]
@@ -167,8 +205,13 @@ with OCI(base64_wallet_text=encoded_data,
                     .pipe(select, names = ["STATDISPID", "code"]) 
                     .pipe(lambda df: df[df["code"].str.contains(timeptn, regex=True, na=False)]) 
                     .drop_duplicates()
-                    .rename(columns={"code": "year"})
-                    .assign(period_type="00", quarter = 0, month = 0)
+                    .assign(
+                        year=lambda df: df["code"].str[:4],
+                        period_type=lambda df: df["code"].str[4:5].map({"0": "CY", "1": "FY"}),
+                        half=lambda df: df["code"].str[5:6],
+                        month_range=lambda df: df["code"].str[6:9],
+                        **(lambda df: df[["period_type", "half", "month_range"]].apply(get_term_and_month, axis=1))
+                    )       
         )
 
 
@@ -192,7 +235,7 @@ with OCI(base64_wallet_text=encoded_data,
     oci.insert_from_df(name = "region_item", df = regions_base[["class_name","name"]].fillna("NA").drop_duplicates(), batch_size = 100000)
 
     times_base = pd.concat(times)
-    oci.insert_from_df(name = "table_time", df = regions_base[["STATDISPID","year","period_type","quarter", "month"]].drop_duplicates())
+    oci.insert_from_df(name = "table_time", df = times_base[["STATDISPID","year","period_type","quarter", "month"]].drop_duplicates())
 
 
 ## 7. dimensionlist
