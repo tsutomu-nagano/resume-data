@@ -217,12 +217,9 @@ with OCI(base64_wallet_text=encoded_data,
 
         tmp = time_meta[["period_type", "half", "month_range"]].apply(get_term_and_month, axis=1)
 
-        print(tmp.head())
-        print(tmp.shape)
-
-        time_meta = time_meta.join(tmp)
-        times.append(time_meta)
-
+        if (len(tmp)) >= 1:
+            time_meta = time_meta.join(tmp)
+            times.append(time_meta)
 
     measures_base = pd.concat(measures)
 
