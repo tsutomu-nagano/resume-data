@@ -200,19 +200,20 @@ with OCI(base64_wallet_text=encoded_data,
                     .drop_duplicates()
         )
 
-        times.append(
-                meta.pipe(lambda df: df[df["class_type"].str.startswith("time")]) 
-                    .pipe(select, names = ["STATDISPID", "code"]) 
-                    .pipe(lambda df: df[df["code"].str.contains(timeptn, regex=True, na=False)]) 
-                    .drop_duplicates()
-                    .assign(
-                        year=lambda df: df["code"].str[:4],
-                        period_type=lambda df: df["code"].str[4:5].map({"0": "CY", "1": "FY"}),
-                        half=lambda df: df["code"].str[5:6],
-                        month_range=lambda df: df["code"].str[6:9],
-                        **(lambda df: df[["period_type", "half", "month_range"]].apply(get_term_and_month, axis=1))
-                    )       
-        )
+
+        time_meta = meta.pipe(lambda df: df[df["class_type"].str.startswith("time")]) \
+                        .pipe(select, names = ["STATDISPID", "code"]) \
+                        .pipe(lambda df: df[df["code"].str.contains(timeptn, regex=True, na=False)]) \
+                        .drop_duplicates() \
+                        .assign(
+                            year=lambda df: df["code"].str[:4],
+                            period_type=lambda df: df["code"].str[4:5].map({"0": "CY", "1": "FY"}),
+                            half=lambda df: df["code"].str[5:6],
+                            month_range=lambda df: df["code"].str[6:9],
+                        )       
+
+        time_meta = time_meta[["period_type", "half", "month_range"]].apply(get_term_and_month, axis=1)
+        times.append(time_meta)
 
 
     measures_base = pd.concat(measures)
