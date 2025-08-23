@@ -168,6 +168,7 @@ class OCI:
         self.logger(f"{proc_name} proc Execute Start")
         with self.connection.cursor() as cursor:
             cursor.callproc(proc_name)
+            self.connection.commit()
         self.logger(f"{proc_name} proc Execute End")
 
     def migration(self, dir_path: str, is_up:bool):
