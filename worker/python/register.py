@@ -215,7 +215,7 @@ with OCI(base64_wallet_text=encoded_data,
                             month_range=lambda df: df["code"].str[6:9],
                         )       
 
-        time_meta = time_meta[["period_type", "half", "month_range"]].apply(get_term_and_month, axis=1)
+        time_meta[["term", "month"]] = time_meta[["period_type", "half", "month_range"]].apply(get_term_and_month, axis=1)
         times.append(time_meta)
 
 
