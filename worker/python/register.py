@@ -242,7 +242,8 @@ with OCI(base64_wallet_text=encoded_data,
 
     times_base = pd.concat(times)
     oci.insert_from_df(name = "table_time", df = times_base[["STATDISPID","year","period_type","term", "month"]].drop_duplicates())
-
+    oci.execute_proc("UPDATE_TABLELIST_YEARS")
+    
 
 ## 7. dimensionlist
 # dimension.base <- list.files(glue("{root_dir}/table_dimension"), full.names = TRUE) %>%

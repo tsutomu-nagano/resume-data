@@ -164,7 +164,9 @@ class OCI:
         
         
         
-    
+    def execute_proc(self, proc_name: str):
+        cursor.callproc(proc_name)
+
     def migration(self, dir_path: str, is_up:bool):
 
         if is_up:
