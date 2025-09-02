@@ -200,7 +200,7 @@ with OCI(base64_wallet_text=encoded_data,
 
         regions.append(
                 meta.pipe(lambda df: df[df["class_type"].str.startswith("area")]) 
-                    .pipe(select, names = ["STATDISPID", "class_name", "^name$"]) 
+                    .pipe(select, names = ["STATDISPID", "^name$"]) 
                     .drop_duplicates()
         )
 
@@ -237,9 +237,8 @@ with OCI(base64_wallet_text=encoded_data,
 
     regions_base = pd.concat(regions)
 
-    oci.insert_from_df(name = "regionlist", df = regions_base[["class_name"]].drop_duplicates())
-    oci.insert_from_df(name = "table_region", df = regions_base[["STATDISPID","class_name"]].drop_duplicates())
-    oci.insert_from_df(name = "region_item", df = regions_base[["class_name","name"]].fillna("NA").drop_duplicates(), batch_size = 100000)
+    oci.insert_from_df(name = "regionlist", df = regions_base[["name"]].drop_duplicates())
+    oci.insert_from_df(name = "table_region", df = regions_base[["STATDISPID","name"]].drop_duplicates())
 
     times_base = pd.concat(times)
     oci.insert_from_df(name = "table_time", df = times_base[["STATDISPID","year","period_type","term", "month"]].drop_duplicates())
