@@ -200,6 +200,7 @@ with OCI(base64_wallet_text=encoded_data,
         regions.append(
                 meta.pipe(lambda df: df[df["class_type"].str.startswith("area")]) 
                     .pipe(select, names = ["STATDISPID", "^name$"]) 
+                    .dropna(subset=["name"]) 
                     .drop_duplicates()
         )
 
