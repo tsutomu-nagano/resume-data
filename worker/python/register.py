@@ -12,6 +12,20 @@ import logging
 periods = ["0000","0103","0101","0202","0303","0406","0404","0505","0606","0709","0707","0808","0909","1012","1010","1111","1212"]
 timeptn = f'[12]\d{{3}}[01][012](?:{"|".join(periods)})'
 
+# 都道府県名リスト
+prefectures = [
+    "北海道", "青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県",
+    "茨城県", "栃木県", "群馬県", "埼玉県", "千葉県", "東京都", "神奈川県",
+    "新潟県", "富山県", "石川県", "福井県", "山梨県", "長野県",
+    "岐阜県", "静岡県", "愛知県", "三重県",
+    "滋賀県", "京都府", "大阪府", "兵庫県", "奈良県", "和歌山県",
+    "鳥取県", "島根県", "岡山県", "広島県", "山口県",
+    "徳島県", "香川県", "愛媛県", "高知県",
+    "福岡県", "佐賀県", "長崎県", "熊本県", "大分県", "宮崎県", "鹿児島県", "沖縄県"
+]
+
+# 正規表現を作成（| でOR検索）
+pref_pattern = "|".join(prefectures)
 
 PandasPipeFunc = Callable[[pd.DataFrame], pd.DataFrame]
 
@@ -201,6 +215,15 @@ with OCI(base64_wallet_text=encoded_data,
                 meta.pipe(lambda df: df[df["class_type"].str.startswith("area")]) 
                     .pipe(select, names = ["STATDISPID", "^name$"]) 
                     .dropna(subset=["name"]) 
+                    .drop_duplicates()
+                    .pipe(lambda df: df[df["name"].str.contains(pref_pattern)])
+                    # 都道府県名をリストとして抽出
+                    .assign(prefecture_list=lambda df: df["name"].str.findall(pref_pattern))
+                    # 1行に1都道府県になるよう展開
+                    .explode("prefecture_list")
+                    .drop(columns=["name"])
+                    # prefecture_list を name にリネーム
+                    .rename(columns={"prefecture_list": "name"})
                     .drop_duplicates()
         )
 
