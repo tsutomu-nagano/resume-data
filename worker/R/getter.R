@@ -10,6 +10,99 @@ library(stringr)
 library(digest)
 
 
+get_sacs <- function(limit = 10000){
+
+    endpoint <- "http://data.e-stat.go.jp/lod/sparql/alldata/query"
+
+    # FILTER(CONTAINS(?city, "前"))
+    # FILTER(CONTAINS(?ken, "岩手"))
+
+
+    query_core <- "
+    where {
+
+        ?s rdf:type sacs:StandardAreaCode;
+           rdfs:label ?city ;
+           sacs:prefectureLabel ?ken;
+           dcterms:isPartOf ?p.
+
+        OPTIONAL {
+            ?s sacs:districtOfSubPrefecture ?sub .
+            FILTER(lang(?sub) = 'ja')
+          }
+
+        ?p rdfs:label ?pname .
+
+        FILTER(lang(?city) = 'ja')
+        FILTER(lang(?pname) = 'ja')
+
+    }
+    "
+
+    query_count <- "
+    PREFIX sacs: <http://data.e-stat.go.jp/lod/terms/sacs#>
+    PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+    select (COUNT(*) AS ?count)
+    %s
+    "
+
+    query_data <- "
+    PREFIX sacs: <http://data.e-stat.go.jp/lod/terms/sacs#>
+    PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+    select ?ken ?sub ?pname ?city
+    %s
+    ORDER BY ?s
+    LIMIT %d
+    OFFSET %d
+    "
+
+
+
+    res <- POST(
+        url = endpoint,
+        body = list(
+            query = sprintf(query_count, query_core)
+        ),
+        encode = "form",
+        add_headers(
+            "Accept" = "text/csv"
+        )
+    )
+
+    count <- read_csv(content(res, "text"))$COUNT
+
+    div <- count %/% limit
+    mod <- count %% limit
+    if (mod != 0){
+        div <- div + 1
+    }
+
+    seq(from = 0, by = limit, length.out = div) %>%
+    purrr::map(function(offset){
+
+        print(offset)
+
+        res <- POST(
+            url = endpoint,
+            body = list(
+                query = sprintf(query_data, query_core, limit, offset)
+            ),
+            encode = "form",
+            add_headers(
+                "Accept" = "text/csv"
+            )
+        )
+
+        read_csv(content(res, "text")) %>% return 
+
+    }) %>% bind_rows %>%
+    distinct %>%
+    return
+}
+
+
 
 toArray <- function(obj){
 
@@ -324,7 +417,66 @@ purrr::map(function(src){
 })
 
 
+# 6. 地域用のデータを作成
+print("6. create region data")
+sacs <- get_sacs() %>%
+        filter(KEN != CITY) %>%
+        filter(str_detect(CITY, "[市町村区]$")) %>%
+        mutate(length = str_length(CITY))
 
+lmin <- sacs %>% pull(length) %>% min
+lmax <- sacs %>% pull(length) %>% max
+
+
+regions <- list.files(glue("{root_dir}/resource/meta"), full.names = TRUE) %>%
+            purrr::map(function(src){
+                read_parquet(src) %>%
+                mutate(src = basename(src)) %>%
+                filter(class_type == "area") %>%
+                filter(!is.na(name)) %>% 
+                distinct(STATDISPID, name) %>%
+                return
+            }) %>% bind_rows() %>%
+            mutate(length = str_length(name), cityname = "") %>%
+            purrr::reduce(
+                .x = lmax:lmin,
+                .init = .,
+                .f = function(data, i){
+
+                    sacs_ <- sacs %>% filter(length == i) %>% mutate(name = CITY) %>% distinct(name, CITY)
+
+                    print(sacs_)
+
+                    ptn <- glue(".{{{i - 1}}}[市区町村]")
+
+                    matched <- data %>%
+                    filter(length >= i) %>%
+                    filter(cityname == "") %>%
+                    mutate(t = str_extract(name, ptn)) %>%
+                    filter(!is.na(t)) %>%
+                    distinct(name, t) %>%
+                    inner_join(sacs_, by = c("t" = "name"))
+
+
+                    if (nrow(matched) >= 1){
+
+                        data <- data %>%
+                        left_join(matched, by = c("name"), multiple = "all") %>%
+                        mutate(cityname = coalesce(CITY, cityname)) %>%
+                        select(-t, -CITY)
+                    }
+
+                    return(data)
+
+                }
+            ) %>%
+            mutate(kenname = replace_na(str_extract(name, ken_ptn), ""))
+
+bind_rows(
+    regions %>% filter(cityname != "") %>% select(STATDISPID, cityname) %>% rename(name = cityname),
+    regions %>% filter(kenname != "") %>% select(STATDISPID, kenname) %>% rename(name = kenname)
+) %>%
+write_excel_csv(glue("{root_dir}/resource/regionlist.csv"), quote = "all")
 
 
 # 事項名とテーブルのIDの中間テーブル用データ作成
