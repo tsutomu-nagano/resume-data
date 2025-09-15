@@ -478,7 +478,7 @@ regions <- list.files(glue("{root_dir}/meta"), full.names = TRUE) %>%
 regions_city <- regions %>% filter(cityname != "") %>% select(STATDISPID, cityname) %>% rename(name = cityname)
 regions_ken <- regions %>% filter(kenname != "") %>% select(STATDISPID, kenname) %>% rename(name = kenname)
 
-bin_rows(
+bind_rows(
     regions_city %>% distinct(STATDISPID) %>% mutate(regiontype = "city"),
     regions_ken %>% distinct(STATDISPID) %>% mutate(regiontype = "ken")
 ) %>%
