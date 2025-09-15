@@ -211,21 +211,21 @@ with OCI(base64_wallet_text=encoded_data,
         )
                         
 
-        regions.append(
-                meta.pipe(lambda df: df[df["class_type"].str.startswith("area")]) 
-                    .pipe(select, names = ["STATDISPID", "^name$"]) 
-                    .dropna(subset=["name"]) 
-                    .drop_duplicates()
-                    .pipe(lambda df: df[df["name"].str.contains(pref_pattern)])
-                    # 都道府県名をリストとして抽出
-                    .assign(prefecture_list=lambda df: df["name"].str.findall(pref_pattern))
-                    # 1行に1都道府県になるよう展開
-                    .explode("prefecture_list")
-                    .drop(columns=["name"])
-                    # prefecture_list を name にリネーム
-                    .rename(columns={"prefecture_list": "name"})
-                    .drop_duplicates()
-        )
+        # regions.append(
+        #         meta.pipe(lambda df: df[df["class_type"].str.startswith("area")]) 
+        #             .pipe(select, names = ["STATDISPID", "^name$"]) 
+        #             .dropna(subset=["name"]) 
+        #             .drop_duplicates()
+        #             .pipe(lambda df: df[df["name"].str.contains(pref_pattern)])
+        #             # 都道府県名をリストとして抽出
+        #             .assign(prefecture_list=lambda df: df["name"].str.findall(pref_pattern))
+        #             # 1行に1都道府県になるよう展開
+        #             .explode("prefecture_list")
+        #             .drop(columns=["name"])
+        #             # prefecture_list を name にリネーム
+        #             .rename(columns={"prefecture_list": "name"})
+        #             .drop_duplicates()
+        # )
 
 
         time_meta = meta.pipe(lambda df: df[df["class_type"].str.startswith("time")]) \
@@ -258,7 +258,7 @@ with OCI(base64_wallet_text=encoded_data,
     oci.insert_from_df(name = "table_dimension", df = dimensions_base[["STATDISPID","class_name"]].drop_duplicates())
     oci.insert_from_df(name = "dimension_item", df = dimensions_base[["class_name","name"]].fillna("NA").drop_duplicates(), batch_size = 100000)
 
-    regions_base = pd.concat(regions)
+    regions_base = pd.read_parquet(f"{src_dir}/regionlist.parquet")
 
     oci.insert_from_df(name = "regionlist", df = regions_base[["name"]].drop_duplicates())
     oci.insert_from_df(name = "table_region", df = regions_base[["STATDISPID","name"]].drop_duplicates())
