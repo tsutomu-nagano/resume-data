@@ -479,7 +479,7 @@ bind_rows(
     regions %>% filter(cityname != "") %>% select(STATDISPID, cityname) %>% rename(name = cityname),
     regions %>% filter(kenname != "") %>% select(STATDISPID, kenname) %>% rename(name = kenname)
 ) %>%
-write_excel_csv(glue("{root_dir}/regionlist.csv"), quote = "all")
+write_parquet(glue("{root_dir}/regionlist.parquet"))
 
 
 # 事項名とテーブルのIDの中間テーブル用データ作成
