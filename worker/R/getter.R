@@ -430,6 +430,11 @@ lmax <- sacs %>% pull(length) %>% max
 
 regions <- list.files(glue("{root_dir}/meta"), full.names = TRUE) %>%
             purrr::map(function(src){
+
+                print(src)
+                read_parquet(src) %>% names %>% print
+
+
                 read_parquet(src) %>%
                 filter(class_type == "area") %>%
                 filter(!is.na(name)) %>% 
