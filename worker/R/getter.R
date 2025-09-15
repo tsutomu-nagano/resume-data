@@ -430,17 +430,12 @@ lmax <- sacs %>% pull(length) %>% max
 
 regions <- list.files(glue("{root_dir}/meta"), full.names = TRUE) %>%
             purrr::map(function(src){
-
-                print(src)
-                read_parquet(src) %>% names %>% print
-
-
                 read_parquet(src) %>%
                 filter(class_type == "area") %>%
                 filter(!is.na(name)) %>% 
                 distinct(STATDISPID, name) %>%
                 return
-            }) %>% bind_rows()
+            }) %>% bind_rows() %>%
             mutate(length = str_length(name), cityname = "") %>%
             purrr::reduce(
                 .x = lmax:lmin,
@@ -480,7 +475,7 @@ bind_rows(
     regions %>% filter(cityname != "") %>% select(STATDISPID, cityname) %>% rename(name = cityname),
     regions %>% filter(kenname != "") %>% select(STATDISPID, kenname) %>% rename(name = kenname)
 ) %>%
-write_excel_csv(glue("{root_dir}/resource/regionlist.csv"), quote = "all")
+write_excel_csv(glue("{root_dir}/regionlist.csv"), quote = "all")
 
 
 # 事項名とテーブルのIDの中間テーブル用データ作成
