@@ -261,7 +261,7 @@ with OCI(base64_wallet_text=encoded_data,
     regions_base = pd.read_parquet(f"{src_dir}/regionlist.parquet")
 
     oci.insert_from_df(name = "regionlist", df = regions_base[["name"]].drop_duplicates())
-    oci.insert_from_df(name = "table_region", df = regions_base[["STATDISPID","name"]].drop_duplicates())
+    oci.insert_from_df(name = "table_region", df = regions_base[["STATDISPID","name"]].drop_duplicates(), batch_size = 100000)
 
     times_base = pd.concat(times)
     oci.insert_from_df(name = "table_time", df = times_base[["STATDISPID","year","period_type","term", "month"]].drop_duplicates())
