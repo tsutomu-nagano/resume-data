@@ -428,28 +428,14 @@ lmin <- sacs %>% pull(length) %>% min
 lmax <- sacs %>% pull(length) %>% max
 
 
-regions <- list.files(glue("{root_dir}/resource/meta"), full.names = TRUE) %>%
+regions <- list.files(glue("{root_dir}/meta"), full.names = TRUE) %>%
             purrr::map(function(src){
-
-                print(src)
-                read_parquet(src) %>% names %>% print
-
-
-                df <- read_parquet(src) %>%
+                read_parquet(src) %>%
                 filter(class_type == "area") %>%
                 filter(!is.na(name)) %>% 
-                distinct(STATDISPID, name)
-
-                print(df)
-
-                return(df)
+                distinct(STATDISPID, name) %>%
+                return
             }) %>% bind_rows()
-
-
-regions %>% names %>% print
-
-
-regions <-  regions %>%
             mutate(length = str_length(name), cityname = "") %>%
             purrr::reduce(
                 .x = lmax:lmin,
