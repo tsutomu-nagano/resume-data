@@ -472,7 +472,8 @@ regions <- list.files(glue("{root_dir}/meta"), full.names = TRUE) %>%
 
                 }
             ) %>%
-            mutate(kenname = replace_na(str_extract(name, ken_ptn), ""))
+            mutate(kenname = replace_na(str_extract(name, ken_ptn), "")) %>%
+            mutate(kenname = if_else(cityname != "", "", kenname))
 
 
 regions_city <- regions %>% filter(cityname != "") %>% select(STATDISPID, cityname) %>% rename(name = cityname)
