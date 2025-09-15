@@ -9,7 +9,6 @@ library(tidyr)
 library(stringr)
 library(digest)
 
-
 get_sacs <- function(limit = 10000){
 
     endpoint <- "http://data.e-stat.go.jp/lod/sparql/alldata/query"
@@ -475,11 +474,20 @@ regions <- list.files(glue("{root_dir}/meta"), full.names = TRUE) %>%
             ) %>%
             mutate(kenname = replace_na(str_extract(name, ken_ptn), ""))
 
-bind_rows(
-    regions %>% filter(cityname != "") %>% select(STATDISPID, cityname) %>% rename(name = cityname),
-    regions %>% filter(kenname != "") %>% select(STATDISPID, kenname) %>% rename(name = kenname)
+
+regions_city <- regions %>% filter(cityname != "") %>% select(STATDISPID, cityname) %>% rename(name = cityname)
+regions_ken <- regions %>% filter(kenname != "") %>% select(STATDISPID, kenname) %>% rename(name = kenname)
+
+bin_rows(
+    regions_city %>% distinct(STATDISPID) %>% mutate(regiontype = "city"),
+    regions_ken %>% distinct(STATDISPID) %>% mutate(regiontype = "ken")
 ) %>%
+write_parquet(glue("{root_dir}/regiontype.parquet"))
+
+bind_rows(regions_city, regions_ken) %>%
 write_parquet(glue("{root_dir}/regionlist.parquet"))
+
+
 
 
 # 事項名とテーブルのIDの中間テーブル用データ作成
