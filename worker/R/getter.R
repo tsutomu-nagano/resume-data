@@ -438,7 +438,13 @@ regions <- list.files(glue("{root_dir}/resource/meta"), full.names = TRUE) %>%
                 print(df)
 
                 return(df)
-            }) %>% bind_rows() %>%
+            }) %>% bind_rows()
+
+
+regions %>% names %>% print
+
+
+regions <-  regions %>%
             mutate(length = str_length(name), cityname = "") %>%
             purrr::reduce(
                 .x = lmax:lmin,
