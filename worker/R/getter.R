@@ -424,6 +424,10 @@ sacs <- get_sacs() %>%
         filter(str_detect(CITY, "[市町村区]$")) %>%
         mutate(length = str_length(CITY))
 
+ken_ptn <- sacs %>% distinct(KEN) %>% pull(KEN) %>% str_c(collapse = "|") 
+ken_ptn <- glue("({ken_ptn})")
+
+
 lmin <- sacs %>% pull(length) %>% min
 lmax <- sacs %>% pull(length) %>% max
 
