@@ -41,7 +41,7 @@ create_stat_info <- function(dest_dir){
         str_subset("[0-9]{8}") %>%
         purrr::map(function(statcode){
 
-            dest <- glue("{dest_info}/{statcode}.json")
+            dest <- glue("{dest_dir}/{statcode}.json")
 
             # 詳細ページ
             url <- glue("https://www.e-stat.go.jp/statistics/{statcode}")
