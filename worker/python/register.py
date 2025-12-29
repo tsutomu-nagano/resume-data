@@ -24,6 +24,20 @@ prefectures = [
     "福岡県", "佐賀県", "長崎県", "熊本県", "大分県", "宮崎県", "鹿児島県", "沖縄県"
 ]
 
+# 統計調査の属性情報の列名変換用マップ
+statinfo_rename_map = {
+    "概要": "description",
+    "統計分野（大分類）": "domain",
+    "統計分野（小分類）": "domain_sub",
+    "調査単位": "survey_units",
+    "選定の方法": "sampling_methods",
+    "調査方法": "survey_methods",
+    "使用する統計基準": "statistical_standard",
+    "調査周期": "survey_cycle",
+}
+statinfo_code_to_name_ja = {v: k for k, v in statinfo_rename_map.items()}
+
+
 # 正規表現を作成（| でOR検索）
 pref_pattern = "|".join(prefectures)
 
@@ -112,6 +126,26 @@ def get_term_and_month(row: pd.Series) -> pd.Series:
 
 
 
+def read_stat_info(src_dir: str) -> pd.DataFrame:
+
+    def json2df(statcode: str, src_dir:str) -> pd.DataFrame:
+        src = f"{src_dir}/{statcode}.json"
+        df = pd.read_json(src).rename(columns=statinfo_rename_map)
+        rep_cols = [v for v in statinfo_rename_map.values() if v in df.columns]
+        return df[rep_cols].assign(statcode=statcode)
+
+    statinfo = pd.concat([json2df(statcode, src_dir) for statcode in statlist["statcode"]]).fillna("")
+
+    statinfo_long = pd.melt(
+        statinfo,
+        id_vars="statcode",
+        var_name="variable",
+        value_name="value"
+    ).pipe(lambda df: df[df["value"] != ""])
+
+    return statinfo_long
+
+
 src_dir = "./resource"
 
 un = os.environ["ORACLE_USER"]
@@ -142,13 +176,45 @@ with OCI(base64_wallet_text=encoded_data,
         "table_regiontype",
         "table_time",
         "regionlist",
-        "tablelist",
-        "statlist",
-        "govlist"
+        "tablelist"
         ]
 
     for table_name in table_names:
         oci.delete(table_name)
+
+    # 統計調査のメタ情報取得
+    stat_info = read_stat_info(f"{src_dir}/stat_info")
+    attributes = stat_info[["statcode","variable"]] \
+        .drop_duplicates() \
+        .rename(columns={"variable":"code"}) \
+        .assign(name_ja=lambda d: d["code"].map(statinfo_code_to_name_ja))
+
+    # 統計調査のメタ情報マスター登録
+    oci.sync_from_df(
+        name = "stat_attribute", 
+        df = attributes[["code","name_ja"]].drop_duplicates(),
+        key_cols=["code","name_ja"]
+        )
+
+    attribute = oci.select("stat_attribute")
+
+    attribute_values = stat_info.merge(
+        attribute,
+        left_on=["variable"],
+        right_on=["CODE"],
+        how="left"
+        ) \
+        .pipe(lambda df: df[["statcode","ID","value"]]) \
+        .rename(columns={"ID":"attribute_id"}) \
+        .explode("value")
+
+
+    oci.sync_from_df(
+        name = "stat_attribute_values", 
+        df = attribute_values,
+        key_cols=["statcode","attribute_id","value"]
+        )
+
 
 
     # 府省／統計の一覧
@@ -157,8 +223,8 @@ with OCI(base64_wallet_text=encoded_data,
 
     govlist = statlist_base[["govcode","govname"]].drop_duplicates()
     statlist = statlist_base[["statcode","statname","govcode"]].drop_duplicates()
-    oci.insert_from_df(name = "govlist", df = govlist)
-    oci.insert_from_df(name = "statlist", df = statlist)
+    oci.sync_from_df(name = "govlist", df = govlist)
+    oci.sync_from_df(name = "statlist", df = statlist)
 
     # 統計データの一覧
     table_tags = []

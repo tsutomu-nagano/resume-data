@@ -105,6 +105,10 @@ class OCI:
         self.logger = logger
     
 
+    def select(self, name: str) -> pd.DataFrame:
+        sql_select: str =  f"SELECT * FROM {name}"
+        return pd.read_sql(sql_select, con=self.connection)
+    
     def get_tables(self):
         cursor = self.connection.cursor()
 
@@ -124,6 +128,94 @@ class OCI:
             self.connection.commit()
 
         self.logger(f"{name} Deleted")
+
+    def _create_temp_table(self, name:str, temp_name:str = "", cols: list = None) -> str:
+
+        if temp_name == "":
+            temp_name = f"TEMP_{name}"
+
+        if cols is None:
+            col_list = "*"
+        else:
+            col_list = ", ".join(cols)
+
+        with self.connection.cursor() as cursor:
+            sql_create: str =  f"""
+                CREATE GLOBAL TEMPORARY TABLE {temp_name}
+                ON COMMIT PRESERVE ROWS
+                AS SELECT {col_list} FROM {name} WHERE 1=0
+            """ 
+            cursor.execute(sql_create)
+            self.connection.commit()
+
+        self.logger(f"{temp_name} Created")
+        return(temp_name)
+
+    def sync_from_df(self, name:str, df:pd.DataFrame, key_cols: list = None,):
+
+        if len(df) >= 1:
+
+            columns = df.columns.values
+            key_cols = key_cols if key_cols is not None else columns.tolist()
+            self.merge_from_df(name, df, key_cols)
+
+            temp_name: str = f"TEMP_{name}"
+
+            condition = " AND ".join([f"t.{col} = s.{col}" for col in key_cols])
+
+            sql_delete = f"""
+                DELETE FROM {name} t
+                WHERE NOT EXISTS (
+                SELECT 1
+                FROM {temp_name} s
+                WHERE {condition}
+                )
+                """
+            print(sql_delete)
+
+
+            with self.connection.cursor() as cursor:
+                cursor.execute(sql_delete)
+                self.connection.commit()
+        
+            self.logger(f"{name} Sync End ")
+
+
+    def merge_from_df(self, name:str, df:pd.DataFrame, key_cols: list = None, source :str = ""):
+        
+        if len(df) >= 1:
+
+            if source != "":
+                self.logger(f"{source}")
+
+            self.logger(f"{name} Merge Start : {len(df)} Record")
+            
+
+            temp_name: str = f"TEMP_{name}"
+            if not self.exists_table(temp_name):
+                self._create_temp_table(name, temp_name, key_cols)
+
+            self.insert_from_df(temp_name,df)
+
+            columns = df.columns.values
+            key_cols = key_cols if key_cols is not None else columns.tolist()
+            condition = " AND ".join([f"t.{col} = s.{col}" for col in key_cols])
+
+            sql_merge = f"""
+                MERGE INTO {name} t
+                    USING {temp_name} s
+                    ON ({condition})
+                WHEN NOT MATCHED THEN
+                    INSERT ({', '.join(columns)})
+                    VALUES ({', '.join([f"s.{col}" for col in columns])})
+                """
+            print(sql_merge)
+
+            with self.connection.cursor() as cursor:
+                cursor.execute(sql_merge)
+                self.connection.commit()
+        
+            self.logger(f"{name} Merge End ")
 
     def insert_from_df(self, name:str, df:pd.DataFrame, source :str = "", batch_size: int = 0):
         
@@ -163,7 +255,16 @@ class OCI:
             
         
         
-        
+
+    def exists_table(self, name: str) -> bool:
+        with self.connection.cursor() as cursor:
+            sql_check = f"""
+                SELECT COUNT(*) FROM user_tables WHERE table_name = UPPER(:table_name)
+            """
+            cursor.execute(sql_check, table_name=name)
+            count = cursor.fetchone()[0]
+            return count > 0
+
     def execute_proc(self, proc_name: str):
         self.logger(f"{proc_name} proc Execute Start")
         with self.connection.cursor() as cursor:
