@@ -126,7 +126,7 @@ def get_term_and_month(row: pd.Series) -> pd.Series:
 
 
 
-def read_stat_info(src_dir: str) -> pd.DataFrame:
+def read_stat_info(src_dir: str, statcodes: List[str]) -> pd.DataFrame:
 
     def json2df(statcode: str, src_dir:str) -> pd.DataFrame:
         src = f"{src_dir}/{statcode}.json"
@@ -134,7 +134,7 @@ def read_stat_info(src_dir: str) -> pd.DataFrame:
         rep_cols = [v for v in statinfo_rename_map.values() if v in df.columns]
         return df[rep_cols].assign(statcode=statcode)
 
-    statinfo = pd.concat([json2df(statcode, src_dir) for statcode in statlist["statcode"]]).fillna("")
+    statinfo = pd.concat([json2df(statcode, src_dir) for statcode in statcodes]).fillna("")
 
     statinfo_long = pd.melt(
         statinfo,
@@ -182,8 +182,16 @@ with OCI(base64_wallet_text=encoded_data,
     for table_name in table_names:
         oci.delete(table_name)
 
+    # 府省／統計の一覧
+    statlist_base = pd.read_csv(f"{src_dir}/statlist.csv", dtype =str)
+
+    govlist = statlist_base[["govcode","govname"]].drop_duplicates()
+    statlist = statlist_base[["statcode","statname","govcode"]].drop_duplicates()
+    oci.sync_from_df(name = "govlist", df = govlist)
+    oci.sync_from_df(name = "statlist", df = statlist)
+
     # 統計調査のメタ情報取得
-    stat_info = read_stat_info(f"{src_dir}/stat_info")
+    stat_info = read_stat_info(f"{src_dir}/stat_info", statlist["statcode"].tolist())
     attributes = stat_info[["statcode","variable"]] \
         .drop_duplicates() \
         .rename(columns={"variable":"code"}) \
@@ -217,14 +225,6 @@ with OCI(base64_wallet_text=encoded_data,
 
 
 
-    # 府省／統計の一覧
-    statlist_base = pd.read_csv(f"{src_dir}/statlist.csv", dtype =str)
-
-
-    govlist = statlist_base[["govcode","govname"]].drop_duplicates()
-    statlist = statlist_base[["statcode","statname","govcode"]].drop_duplicates()
-    oci.sync_from_df(name = "govlist", df = govlist)
-    oci.sync_from_df(name = "statlist", df = statlist)
 
     # 統計データの一覧
     table_tags = []
