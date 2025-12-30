@@ -52,7 +52,7 @@ class OCI:
 
         if self._wallet_dir == "":
 
-            self._wallet_dir = "./worker/python/wallet"
+            self._wallet_dir = "./wallet"
             # walletのbase64テキストからzipファイルを作成して展開
 
             with tempfile.NamedTemporaryFile(suffix=".zip") as temp_wallet_file:
