@@ -50,8 +50,6 @@ class OCI:
 
     def __enter__(self):
 
-        print("TESTTTEST")
-
         if self._wallet_dir == "":
 
             self._wallet_dir = "./worker/python/wallet"
@@ -67,14 +65,14 @@ class OCI:
                 with zipfile.ZipFile(temp_wallet_file, "r") as z:
                     z.extractall(".")
 
+        for f in Path(self._wallet_dir).rglob("*"):
+            if f.is_file():
+                print(f)
 
         oracledb.init_oracle_client(
             config_dir=str(self._wallet_dir)
             )
 
-        for f in Path(self._wallet_dir).rglob("*"):
-            if f.is_file():
-                print(f)
 
         self.connection = oracledb.connect(user=self.user, password=self.password, dsn=self.dataset_name)
 
