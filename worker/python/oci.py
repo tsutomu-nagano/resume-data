@@ -10,6 +10,7 @@ import os
 import shutil
 import io
 import sys
+import tempfile
 
 import pandas as pd
 
@@ -35,7 +36,8 @@ class OCI:
                   dataset_name: str,
                   base64_wallet_text: str,
                   wallet_password: str,
-                  work_dir: str = ".", wallet_name: str = "wallet"):
+                  wallet_dir: str = ""
+                  ):
 
 
         self.user = user
@@ -43,59 +45,37 @@ class OCI:
         self.dataset_name = dataset_name
         self.wallet_password = wallet_password
         self._base64_wallet_text = base64_wallet_text
-        self._work_dir = work_dir
-        self._wallet_dir = Path(work_dir) / wallet_name
+        self._wallet_dir = wallet_dir
 
 
     def __enter__(self):
 
-        # # デコード後のZIPファイルを一時ファイルとして作成
-        # with tempfile.NamedTemporaryFile(mode='w+b') as temp_file:
+        print("TESTTTEST")
 
-        #     # ファイル名を取得
-        #     temp_file_name = temp_file.name
+        if self._wallet_dir == "":
 
-        #     # Base64デコードして元のバイナリデータに戻す
-        #     decoded = base64.b64decode(self._base64_wallet_text)
-           
-        #     # 一時ファイルにデータを書き込む
-        #     temp_file.write(decoded)
-            
-        #     # ファイルポインタを先頭に戻す
-        #     temp_file.seek(0)
+            self._wallet_dir = "./worker/python/wallet"
+            # walletのbase64テキストからzipファイルを作成して展開
 
-        #     # 解凍先のディレクトリのパス
-        #     extract_dir = self._wallet_dir
+            with tempfile.NamedTemporaryFile(suffix=".zip") as temp_wallet_file:
 
-        #     # 解凍先のディレクトリが存在する場合は削除
-        #     if os.path.exists(extract_dir):
-        #         shutil.rmtree(extract_dir)
+                # 2. base64 デコードして zip ファイルとして保存
+                with open(temp_wallet_file.name, "wb") as f:
+                    f.write(base64.b64decode(self._base64_wallet_text))
 
-        #     # 解凍先のディレクトリを作成
-        #     os.makedirs(extract_dir)
-
-        #     # ZIPファイルを解凍する
-        #     with zipfile.ZipFile(io.BytesIO(temp_file.read()), 'r') as zip_ref:
-        #         zip_ref.extractall(extract_dir)
+                # 3. zip を展開
+                with zipfile.ZipFile(temp_wallet_file, "r") as z:
+                    z.extractall(".")
 
 
-        
         oracledb.init_oracle_client(
-            config_dir=str(self._wallet_dir.resolve())
+            config_dir=str(self._wallet_dir)
             )
-        
-        for f in self._wallet_dir.rglob("*"):
+
+        for f in Path(self._wallet_dir).rglob("*"):
             if f.is_file():
                 print(f)
 
-        # params = oracledb.ConnectParams(
-        #             wallet_location = str(self._wallet_dir),
-        #             wallet_password = self.wallet_password
-        #             )
-
-        # dsn = f"{host}:{port}/{service_name}"
-        
-        # self.connection = oracledb.connect(user=self.user, password=self.password, dsn=self.dataset_name, params=params)
         self.connection = oracledb.connect(user=self.user, password=self.password, dsn=self.dataset_name)
 
         return(self)
@@ -309,5 +289,5 @@ class OCI:
 
     def __exit__(self, exc_type, exc_value, traceback):
             
-        if self._wallet_dir and os.path.exists(self._wallet_dir):
+        if self._wallet_dir != "" and os.path.exists(self._wallet_dir):
             shutil.rmtree(self._wallet_dir)
