@@ -65,7 +65,6 @@ class OCI:
                 with zipfile.ZipFile(temp_wallet_file, "r") as z:
                     z.extractall(".")
 
-        print(self._wallet_dir)
         for f in Path(self._wallet_dir).rglob("*"):
             if f.is_file():
                 print(f)
