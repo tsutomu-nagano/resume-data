@@ -117,7 +117,14 @@ toArray <- function(obj){
 getMetaList <- function(appid, statsdataid){
 
     url <- glue("http://api.e-stat.go.jp/rest/3.0/app/json/getMetaInfo?appId={appid}&statsDataId={statsdataid}&explanationGetFlg=Y")
-    res <- GET(url)
+    res <- RETRY(
+            "GET",
+            url,
+            times = 5,          # 最大リトライ回数
+            pause_base = 1,     # 待機秒（指数バックオフのベース）
+            pause_cap = 10      # 最大待機秒
+            )
+
     res.json <- content(res)
 
 
@@ -162,7 +169,14 @@ getStatsNameList <- function(appid){
     base <- ""
 
     url <- glue("http://api.e-stat.go.jp/rest/3.0/app/json/getStatsList?appId={appid}&statsNameList=Y")
-    res <- GET(url)
+    res <- RETRY(
+            "GET",
+            url,
+            times = 5,          # 最大リトライ回数
+            pause_base = 1,     # 待機秒（指数バックオフのベース）
+            pause_cap = 10      # 最大待機秒
+            )
+
     res.json <- content(res)
 
     datalist_inf <- res.json$GET_STATS_LIST$DATALIST_INF
@@ -205,7 +219,14 @@ getStatsList <- function(appid, statcode = "", updated_date = ""){
 
 
         url <- "http://api.e-stat.go.jp/rest/3.0/app/json/getStatsList"
-        res <- GET(url, query = params)
+        res <- RETRY(
+                "GET",
+                url,
+                query = params,
+                times = 5,          # 最大リトライ回数
+                pause_base = 1,     # 待機秒（指数バックオフのベース）
+                pause_cap = 10      # 最大待機秒
+                )
         res.json <- content(res)
 
         datalist_inf <- res.json$GET_STATS_LIST$DATALIST_INF
