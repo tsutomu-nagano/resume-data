@@ -187,8 +187,8 @@ with OCI(base64_wallet_text=encoded_data,
 
     govlist = statlist_base[["govcode","govname"]].drop_duplicates()
     statlist = statlist_base[["statcode","statname","govcode"]].drop_duplicates()
-    oci.sync_from_df(name = "govlist", df = govlist)
-    oci.sync_from_df(name = "statlist", df = statlist)
+    oci.sync_from_df(name = "govlist", df = govlist,key_cols = ["govcode"])
+    oci.sync_from_df(name = "statlist", df = statlist,key_cols = ["statcode"])
 
     # 統計調査のメタ情報取得
     stat_info = read_stat_info(f"{src_dir}/stat_info", statlist["statcode"].tolist())
