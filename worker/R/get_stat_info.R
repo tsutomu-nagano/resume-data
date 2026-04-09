@@ -12,7 +12,15 @@ get_last_page <- function(){
 
     url <- glue("https://www.e-stat.go.jp/stat-search?page=1")
 
-    pageText <- read_html(url) %>%
+    res <- RETRY(
+            "GET",
+            url,
+            times = 5,          # 最大リトライ回数
+            pause_base = 1,     # 待機秒（指数バックオフのベース）
+            pause_cap = 10      # 最大待機秒
+            )
+
+    pageText <- read_html(res) %>%
                 html_element("body") %>%
                 html_element("div.stat-paginate-index.rig") %>%
                 html_text()
@@ -46,7 +54,15 @@ create_stat_info <- function(dest_dir){
             # 詳細ページ
             url <- glue("https://www.e-stat.go.jp/statistics/{statcode}")
 
-            info <- read_html(url) %>%
+            res <- RETRY(
+                "GET",
+                url,
+                times = 5,          # 最大リトライ回数
+                pause_base = 1,     # 待機秒（指数バックオフのベース）
+                pause_cap = 10      # 最大待機秒
+            )
+
+            info <- read_html(res) %>%
             html_element("body") %>%
             html_element("table.stat-resource_sheet.stat-resource_table") %>%
             html_table
@@ -55,8 +71,13 @@ create_stat_info <- function(dest_dir){
             # 調査計画
             url <- glue("https://www.e-stat.go.jp/surveyplan/p{statcode}001")
 
-            res <- httr::GET(url)
-
+            res <- RETRY(
+                "GET",
+                url,
+                times = 5,          # 最大リトライ回数
+                pause_base = 1,     # 待機秒（指数バックオフのベース）
+                pause_cap = 10      # 最大待機秒
+            )
 
             if (httr::status_code(res) == 200) {
 
