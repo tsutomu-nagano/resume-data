@@ -37,9 +37,11 @@ create_stat_info <- function(dest_dir){
     # 統計一覧のページ数の最大を取得する
     last_page <- as.integer(get_last_page())
 
+    print(last_page)
     1:last_page %>% 
     purrr::map(function(page){
 
+        print(glue("{page} PAGE"))
         url <- glue("https://www.e-stat.go.jp/stat-search?page={page}")
         res <- RETRY(
                 "GET",
@@ -58,10 +60,12 @@ create_stat_info <- function(dest_dir){
         str_subset("[0-9]{8}") %>%
         purrr::map(function(statcode){
 
+            print(statcode)
             dest <- glue("{dest_dir}/{statcode}.json")
 
             # 詳細ページ
             url <- glue("https://www.e-stat.go.jp/statistics/{statcode}")
+            print(url)
 
             res <- RETRY(
                 "GET",
@@ -80,6 +84,7 @@ create_stat_info <- function(dest_dir){
 
             # 調査計画
             url <- glue("https://www.e-stat.go.jp/surveyplan/p{statcode}001")
+            print(url)
 
             res <- RETRY(
                 "GET",
