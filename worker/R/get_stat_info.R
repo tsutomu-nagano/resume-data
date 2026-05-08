@@ -17,7 +17,8 @@ get_last_page <- function(){
             url,
             times = 5,          # 最大リトライ回数
             pause_base = 1,     # 待機秒（指数バックオフのベース）
-            pause_cap = 10      # 最大待機秒
+            pause_cap = 10,      # 最大待機秒
+　　        config = httr::use_http_1_1()
             )
 
     pageText <- read_html(res) %>%
@@ -40,8 +41,16 @@ create_stat_info <- function(dest_dir){
     purrr::map(function(page){
 
         url <- glue("https://www.e-stat.go.jp/stat-search?page={page}")
+        res <- RETRY(
+                "GET",
+                url,
+                times = 5,          # 最大リトライ回数
+                pause_base = 1,     # 待機秒（指数バックオフのベース）
+                pause_cap = 10,      # 最大待機秒
+    　　        config = httr::use_http_1_1()
+                )
 
-        doc <- read_html(url) %>% html_element("body")
+        doc <- read_html(res) %>% html_element("body")
 
         doc %>%
         html_elements('span.stat-title') %>%
@@ -59,7 +68,8 @@ create_stat_info <- function(dest_dir){
                 url,
                 times = 5,          # 最大リトライ回数
                 pause_base = 1,     # 待機秒（指数バックオフのベース）
-                pause_cap = 10      # 最大待機秒
+                pause_cap = 10,      # 最大待機秒
+    　　        config = httr::use_http_1_1()
             )
 
             info <- read_html(res) %>%
@@ -76,7 +86,8 @@ create_stat_info <- function(dest_dir){
                 url,
                 times = 5,          # 最大リトライ回数
                 pause_base = 1,     # 待機秒（指数バックオフのベース）
-                pause_cap = 10      # 最大待機秒
+                pause_cap = 10,      # 最大待機秒
+    　　        config = httr::use_http_1_1()
             )
 
             if (httr::status_code(res) == 200) {
