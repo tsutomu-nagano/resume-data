@@ -1,5 +1,5 @@
 
-library(httr)
+library(httr2)
 library(rvest)
 library(glue)
 library(dplyr)
@@ -12,15 +12,13 @@ get_last_page <- function(){
 
     url <- glue("https://www.e-stat.go.jp/stat-search?page=1")
 
-    res <- RETRY(
-            "GET",
-            url,
-            times = 5,          # 最大リトライ回数
-            pause_base = 1,     # 待機秒（指数バックオフのベース）
-            pause_cap = 10,      # 最大待機秒
-　　        config = httr::use_http_1_1()
-            )
 
+    res <- request(url) %>%
+            req_method("GET") %>%
+            # req_retry(max_tries = 5) %>%
+            req_perform() %>%
+            resp_body_html()
+    
     pageText <- read_html(res) %>%
                 html_element("body") %>%
                 html_element("div.stat-paginate-index.rig") %>%
@@ -43,14 +41,12 @@ create_stat_info <- function(dest_dir){
 
         print(glue("{page} PAGE"))
         url <- glue("https://www.e-stat.go.jp/stat-search?page={page}")
-        res <- RETRY(
-                "GET",
-                url,
-                times = 5,          # 最大リトライ回数
-                pause_base = 1,     # 待機秒（指数バックオフのベース）
-                pause_cap = 10,      # 最大待機秒
-    　　        config = httr::use_http_1_1()
-                )
+        res <- request(url) %>%
+                req_method("GET") %>%
+                # req_retry(max_tries = 5) %>%
+                req_perform() %>%
+                resp_body_html()
+
 
         doc <- read_html(res) %>% html_element("body")
 
@@ -67,14 +63,11 @@ create_stat_info <- function(dest_dir){
             url <- glue("https://www.e-stat.go.jp/statistics/{statcode}")
             print(url)
 
-            res <- RETRY(
-                "GET",
-                url,
-                times = 5,          # 最大リトライ回数
-                pause_base = 1,     # 待機秒（指数バックオフのベース）
-                pause_cap = 10,      # 最大待機秒
-    　　        config = httr::use_http_1_1()
-            )
+            res <- request(url) %>%
+                    req_method("GET") %>%
+                    # req_retry(max_tries = 5) %>%
+                    req_perform() %>%
+                    resp_body_html()
 
             info <- read_html(res) %>%
             html_element("body") %>%
@@ -86,24 +79,19 @@ create_stat_info <- function(dest_dir){
             url <- glue("https://www.e-stat.go.jp/surveyplan/p{statcode}001")
             print(url)
 
-            res <- RETRY(
-                "GET",
-                url,
-                times = 5,          # 最大リトライ回数
-                pause_base = 1,     # 待機秒（指数バックオフのベース）
-                pause_cap = 10,      # 最大待機秒
-    　　        config = httr::use_http_1_1()
-            )
+            res <- request(url) %>%
+                    req_method("GET") %>%
+                    # req_retry(max_tries = 5) %>%
+                    req_perform()
 
-            if (httr::status_code(res) == 200) {
+            if (resp_status(res) == 200) {
 
-                doc <- httr::content(res, as = "parsed")
-
-                plan <- doc %>%
-                html_element("body") %>%
-                html_elements("table.stat-resource_sheet.stat-resource_table") %>%
-                html_table %>%
-                bind_rows()
+                plan <- resp_body_html(res) %>%
+                        read_html %>%
+                        html_element("body") %>%
+                        html_elements("table.stat-resource_sheet.stat-resource_table") %>%
+                        html_table %>%
+                        bind_rows()
 
 
                 info <- bind_rows(info, plan) %>% distinct()
