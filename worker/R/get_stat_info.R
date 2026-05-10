@@ -16,10 +16,9 @@ get_last_page <- function(){
     res <- request(url) %>%
             req_method("GET") %>%
             # req_retry(max_tries = 5) %>%
-            req_perform() %>%
-            resp_body_html()
+            req_perform()
     
-    pageText <- read_html(res) %>%
+    pageText <- resp_body_html(res) %>%
                 html_element("body") %>%
                 html_element("div.stat-paginate-index.rig") %>%
                 html_text()
@@ -44,11 +43,9 @@ create_stat_info <- function(dest_dir){
         res <- request(url) %>%
                 req_method("GET") %>%
                 # req_retry(max_tries = 5) %>%
-                req_perform() %>%
-                resp_body_html()
-
-
-        doc <- read_html(res) %>% html_element("body")
+                req_perform()
+                
+        doc <- resp_body_html(res) %>% html_element("body")
 
         doc %>%
         html_elements('span.stat-title') %>%
@@ -66,37 +63,49 @@ create_stat_info <- function(dest_dir){
             res <- request(url) %>%
                     req_method("GET") %>%
                     # req_retry(max_tries = 5) %>%
-                    req_perform() %>%
-                    resp_body_html()
+                    req_perform()
+                    
 
-            info <- read_html(res) %>%
-            html_element("body") %>%
-            html_element("table.stat-resource_sheet.stat-resource_table") %>%
-            html_table
+            info <- resp_body_html(res) %>%
+                    html_element("body") %>%
+                    html_element("table.stat-resource_sheet.stat-resource_table") %>%
+                    html_table
 
 
             # 調査計画
             url <- glue("https://www.e-stat.go.jp/surveyplan/p{statcode}001")
             print(url)
 
-            res <- request(url) %>%
-                    req_method("GET") %>%
-                    # req_retry(max_tries = 5) %>%
-                    req_perform()
 
-            if (resp_status(res) == 200) {
+            res <- tryCatch(
+                request(url) %>%
+                req_method("GET") %>%
+                req_perform()
+                ,
+                httr2_http_404 = function(cnd) NULL
+            )
 
-                plan <- resp_body_html(res) %>%
-                        read_html %>%
-                        html_element("body") %>%
-                        html_elements("table.stat-resource_sheet.stat-resource_table") %>%
-                        html_table %>%
-                        bind_rows()
+            # res <- request(url) %>%
+            #         req_method("GET") %>%
+            #         # req_retry(max_tries = 5) %>%
+            #         req_perform()
+            #         # last_response()
+
+            if (!is.null(res)){
+                if (resp_status(res) == 200) {
+
+                    plan <- resp_body_html(res) %>%
+                            html_element("body") %>%
+                            html_elements("table.stat-resource_sheet.stat-resource_table") %>%
+                            html_table %>%
+                            bind_rows()
 
 
-                info <- bind_rows(info, plan) %>% distinct()
+                    info <- bind_rows(info, plan) %>% distinct()
 
+                }
             }
+
 
 
             info %>%
@@ -123,8 +132,8 @@ create_stat_info <- function(dest_dir){
 
 args <- commandArgs(trailingOnly = T)
 
-root_dir <- args[1]
-# root_dir <- "./resource"
+# root_dir <- args[1]
+root_dir <- "./resource"
 
 dest_dir <- glue("{root_dir}/stat_info")
 if (dir.exists(dest_dir)){
