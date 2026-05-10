@@ -22,3 +22,17 @@ services:
       - .:/app
 
     command: "/bin/bash"
+
+  dev:
+    image: rocker/tidyverse:4.4
+    container_name: R-dev
+
+    stdin_open: true
+    tty: true
+
+    volumes:
+      - ".:/workspaces"
+
+    working_dir: /workspaces
+
+    command: "/bin/bash"
