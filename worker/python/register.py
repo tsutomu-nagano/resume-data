@@ -34,6 +34,7 @@ statinfo_rename_map = {
     "調査方法": "survey_methods",
     "使用する統計基準": "statistical_standard",
     "調査周期": "survey_cycle",
+    "統計の種類": "stat_kind",
 }
 statinfo_code_to_name_ja = {v: k for k, v in statinfo_rename_map.items()}
 
