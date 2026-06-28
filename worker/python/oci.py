@@ -218,14 +218,34 @@ class OCI:
                         data_to_insert.append(list(row))
 
                     # データの一括挿入
-                    cursor.executemany(sql_insert, data_to_insert)
+                    cursor.executemany(sql_insert, data_to_insert, batcherrors=True)
+                    errors = cursor.getbatcherrors()
+
+                    if errors:
+                        for error in errors[:20]:
+                            self.logger(
+                                f"row offset={error.offset}, error={error.message}, data={data_to_insert[error.offset]}"
+                            )
+                        self.connection.rollback()
+                        raise Exception(f"{name} insert failed: {len(errors)} batch errors")
+
                     self.connection.commit()
 
                 else:
 
                     for i in range(0, len(df), batch_size):
                         data_to_insert = [list(row) for row in df.values[i:i+batch_size]]
-                        cursor.executemany(sql_insert, data_to_insert)
+                        cursor.executemany(sql_insert, data_to_insert, batcherrors=True)
+                        errors = cursor.getbatcherrors()
+
+                        if errors:
+                            for error in errors[:20]:
+                                self.logger(
+                                    f"row offset={error.offset}, error={error.message}, data={data_to_insert[error.offset]}"
+                                )
+                            self.connection.rollback()
+                            raise Exception(f"{name} insert failed: {len(errors)} batch errors")
+
                         self.connection.commit()
         
             self.logger(f"{name} Insert End ")
