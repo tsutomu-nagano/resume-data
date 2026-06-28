@@ -339,8 +339,10 @@ with OCI(base64_wallet_text=encoded_data,
     )
     oci.insert_from_df(name = "table_regiontype", df = regiontype[["STATDISPID","regiontype"]].drop_duplicates(), batch_size = 100000)
 
-    times_base = pd.concat(times)
+    times_base = (
+                    pd.concat(times)
                     .merge(registered_table_ids, on="STATDISPID", how="inner")
+    )
     oci.insert_from_df(name = "table_time", df = times_base[["STATDISPID","year","period_type","term", "month"]].drop_duplicates())
     oci.execute_proc("UPDATE_TABLELIST_YEARS")
     
