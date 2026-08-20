@@ -6,3 +6,5 @@ wallet_b64.txt
 wallet/
 
 __pycache__
+
+PROJECT_STATUS.md
