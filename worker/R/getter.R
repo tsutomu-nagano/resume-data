@@ -408,6 +408,9 @@ mutate(new = purrr::pmap(
 
         if (file.exists(latest.src)){
             read_parquet(latest.src) %>%
+            left_join(new %>% distinct(STATDISPID) %>% select(is.delete = "1"), by = "STATDISPID", multiple = "all") %>%
+            filter(is.na(is.delete)) %>%
+            select(-is.delete) %>%
             bind_rows(new) %>%
             write_parquet(latest.src)
         } else {
