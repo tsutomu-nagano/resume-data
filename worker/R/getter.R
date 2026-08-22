@@ -420,7 +420,7 @@ mutate(new = purrr::pmap(
 
         if (file.exists(latest.src)){
             read_parquet(latest.src) %>%
-            left_join(new %>% distinct(STATDISPID) %>% select(is.delete = "1"), by = "STATDISPID", multiple = "all") %>%
+            left_join(new %>% distinct(STATDISPID) %>% mutate(is.delete = "1"), by = "STATDISPID", multiple = "all") %>%
             filter(is.na(is.delete)) %>%
             select(-is.delete) %>%
             bind_rows(new) %>%
