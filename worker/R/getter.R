@@ -132,6 +132,8 @@ getMetaList <- function(appid, statsdataid){
             pause_cap = 10      # 最大待機秒
             )
 
+    print(status_code(res))
+
     res.json <- content(res)
 
 
