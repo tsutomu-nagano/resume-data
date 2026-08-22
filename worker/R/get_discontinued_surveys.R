@@ -135,8 +135,8 @@ create_stat_info <- function(dest_dir){
 
 args <- commandArgs(trailingOnly = T)
 
-# root_dir <- args[1]
-root_dir <- "./resource"
+root_dir <- args[1]
+# root_dir <- "./resource"
 
 
 url <- "https://www.soumu.go.jp/main_content/000675143.xlsx"
