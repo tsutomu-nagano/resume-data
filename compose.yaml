@@ -25,10 +25,13 @@ services:
 
   dev:
     image: rocker/tidyverse:4.4
-    container_name: redume-dev
+    container_name: resume-dev
 
     stdin_open: true
     tty: true
+
+    env_file:
+      - .env.local
 
     volumes:
       - ".:/workspaces"
