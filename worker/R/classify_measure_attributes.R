@@ -99,10 +99,11 @@ root_dir <- args[1]
 dest <- glue("{root_dir}/measure_attributes.csv")
 
 
-measures <- list.files(glue("{root_dir}/meta"), full.names = TRUE) %>%
-purrr::map_dfr(function(src){
-  
-    df <- arrow::open_dataset(src) %>%
+measures <- read_csv(glue("{root_dir}/statlist.csv"), col_types = cols(.default = "c")) %>%
+pull(statcode) %>%
+purrr::map_dfr(function(statcode){
+
+    df <- arrow::open_dataset(glue("{root_dir}/meta/{statcode}.parquet")) %>%
           dplyr::filter(class_type == "tab") %>%
           dplyr::select(name) %>%
           dplyr::distinct() %>%
@@ -110,9 +111,8 @@ purrr::map_dfr(function(src){
 
     return(df)
 
-})
-
-
+}) %>%
+distinct()
 
 
 # ------------------------------------------------------------

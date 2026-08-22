@@ -121,7 +121,7 @@ toArray <- function(obj){
 }
 
 
-getMetaList <- function(appid, statsdataid){
+getMetaList <- function(appid, statsdataid, statcode_){
 
     url <- glue("https://api.e-stat.go.jp/rest/3.0/app/json/getMetaInfo?appId={appid}&statsDataId={statsdataid}&explanationGetFlg=Y")
     res <- RETRY(
@@ -411,7 +411,7 @@ mutate(new = purrr::pmap(
             log_message(statdispid)
             # dest <- glue("{temp_dir}/{statdispid}.parquet")
             # getMetaList(appid, statdispid) %>% write_parquet(dest)
-            getMetaList(appid, statdispid)
+            getMetaList(appid, statdispid, statcode)
 
         }) %>% bind_rows
 
