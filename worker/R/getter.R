@@ -18,7 +18,7 @@ log_message <- function(message) {
 
 get_sacs <- function(limit = 10000){
 
-    endpoint <- "http://data.e-stat.go.jp/lod/sparql/alldata/query"
+    endpoint <- "https://data.e-stat.go.jp/lod/sparql/alldata/query"
 
     # FILTER(CONTAINS(?city, "前"))
     # FILTER(CONTAINS(?ken, "岩手"))
@@ -123,7 +123,7 @@ toArray <- function(obj){
 
 getMetaList <- function(appid, statsdataid){
 
-    url <- glue("http://api.e-stat.go.jp/rest/3.0/app/json/getMetaInfo?appId={appid}&statsDataId={statsdataid}&explanationGetFlg=Y")
+    url <- glue("https://api.e-stat.go.jp/rest/3.0/app/json/getMetaInfo?appId={appid}&statsDataId={statsdataid}&explanationGetFlg=Y")
     res <- RETRY(
             "GET",
             url,
@@ -175,7 +175,7 @@ getStatsNameList <- function(appid){
 
     base <- ""
 
-    url <- glue("http://api.e-stat.go.jp/rest/3.0/app/json/getStatsList?appId={appid}&statsNameList=Y")
+    url <- glue("https://api.e-stat.go.jp/rest/3.0/app/json/getStatsList?appId={appid}&statsNameList=Y")
     res <- RETRY(
             "GET",
             url,
@@ -225,7 +225,7 @@ getStatsList <- function(appid, statcode = "", updated_date = ""){
         }
 
 
-        url <- "http://api.e-stat.go.jp/rest/3.0/app/json/getStatsList"
+        url <- "https://api.e-stat.go.jp/rest/3.0/app/json/getStatsList"
         res <- RETRY(
                 "GET",
                 url,
