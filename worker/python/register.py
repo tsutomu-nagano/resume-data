@@ -194,7 +194,7 @@ with OCI(base64_wallet_text=encoded_data,
     oci.sync_from_df(name = "statlist", df = statlist,key_cols = ["statcode"])
 
     # 廃止の統計の一覧
-    discon = pd.read_csv(f"{src_dir}/discontinued_surveys.csv", dtype =str)[["statcode","last_approve_date","memo"]].drop_duplicates()
+    discon = pd.read_csv(f"{src_dir}/discontinued_surveys.csv", dtype =str)[["statcode"]].drop_duplicates()
     oci.sync_from_df(name = "discontinued_surveys", df = discon, key_cols = ["statcode"])
 
 
