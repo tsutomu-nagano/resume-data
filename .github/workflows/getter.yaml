@@ -41,6 +41,9 @@ jobs:
       - name: Run R script for Get e-Stat Data for statinfo
         run:  Rscript ./worker/R/get_stat_info.R $ROOT_DIR
 
+      - name: Run R script for measure_attributes
+        run:  Rscript ./worker/R/classify_measure_attributes.R $ROOT_DIR
+
       # - name: Run R script for Get e-Stat Data
       #   run:  ls ./resource -R -all
 

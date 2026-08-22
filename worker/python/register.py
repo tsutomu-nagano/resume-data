@@ -170,6 +170,7 @@ with OCI(base64_wallet_text=encoded_data,
         "table_dimension",
         "dimensionlist",
         "table_measure",
+        "measure_attribute",
         "measurelist",
         "table_tag",
         "taglist",
@@ -177,7 +178,8 @@ with OCI(base64_wallet_text=encoded_data,
         "table_regiontype",
         "table_time",
         "regionlist",
-        "tablelist"
+        "tablelist",
+        "discontinued_surveys"
         ]
 
     for table_name in table_names:
@@ -190,6 +192,11 @@ with OCI(base64_wallet_text=encoded_data,
     statlist = statlist_base[["statcode","statname","govcode"]].drop_duplicates()
     oci.sync_from_df(name = "govlist", df = govlist,key_cols = ["govcode"])
     oci.sync_from_df(name = "statlist", df = statlist,key_cols = ["statcode"])
+
+    # 廃止の統計の一覧
+    discon = pd.read_csv(f"{src_dir}/discontinued_surveys.csv", dtype =str)[["statcode","last_approve_date","memo"]].drop_duplicates()
+    oci.sync_from_df(name = "discontinued_surveys", df = discon, key_cols = ["statcode"])
+
 
     # 統計調査のメタ情報取得
     stat_info = read_stat_info(f"{src_dir}/stat_info", statlist["statcode"].tolist())
@@ -318,6 +325,14 @@ with OCI(base64_wallet_text=encoded_data,
 
     oci.insert_from_df(name = "measurelist", df = measures_base[["name"]].drop_duplicates())
     oci.insert_from_df(name = "table_measure", df = measures_base[["STATDISPID","name"]].drop_duplicates())
+
+
+    # 集計事項の属性
+    measure_attr = pd.read_csv(f"{src_dir}/measure_attributes.csv", dtype =str)
+
+    govlist = measure_attr[["govcode","govname"]].drop_duplicates()
+    oci.sync_from_df(name = "measure_attribute", df = measure_attr, key_cols = ["name","attribute","value"])
+
 
 
     dimensions_base = pd.concat(dimensions)
