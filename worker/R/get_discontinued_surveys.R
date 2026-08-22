@@ -1,0 +1,179 @@
+
+library(httr2)
+library(rvest)
+library(glue)
+library(dplyr)
+library(stringr)
+library(readr)
+library(tidyr)
+
+
+
+
+
+get_last_page <- function(){
+
+    url <- glue("https://www.e-stat.go.jp/stat-search?page=1")
+
+
+    res <- request(url) %>%
+            req_method("GET") %>%
+            # req_retry(max_tries = 5) %>%
+            req_perform()
+    
+    pageText <- resp_body_html(res) %>%
+                html_element("body") %>%
+                html_element("div.stat-paginate-index.rig") %>%
+                html_text()
+
+    return(str_match(pageText, "([0-9]+)/([0-9]+)ページ")[1,3])
+
+
+}
+
+
+create_stat_info <- function(dest_dir){
+
+    # 統計一覧のページ数の最大を取得する
+    last_page <- as.integer(get_last_page())
+
+    print(last_page)
+    1:last_page %>% 
+    purrr::map(function(page){
+
+        print(glue("{page} PAGE"))
+        url <- glue("https://www.e-stat.go.jp/stat-search?page={page}")
+        res <- request(url) %>%
+                req_method("GET") %>%
+                # req_retry(max_tries = 5) %>%
+                req_perform()
+                
+        doc <- resp_body_html(res) %>% html_element("body")
+
+        doc %>%
+        html_elements('span.stat-title') %>%
+        html_text() %>%
+        str_subset("[0-9]{8}") %>%
+        purrr::map(function(statcode){
+
+            print(statcode)
+            dest <- glue("{dest_dir}/{statcode}.json")
+
+            # 詳細ページ
+            url <- glue("https://www.e-stat.go.jp/statistics/{statcode}")
+            print(url)
+
+            res <- request(url) %>%
+                    req_method("GET") %>%
+                    # req_retry(max_tries = 5) %>%
+                    req_perform()
+                    
+
+            info <- resp_body_html(res) %>%
+                    html_element("body") %>%
+                    html_element("table.stat-resource_sheet.stat-resource_table") %>%
+                    html_table
+
+
+            # 調査計画
+            url <- glue("https://www.e-stat.go.jp/surveyplan/p{statcode}001")
+            print(url)
+
+
+            res <- tryCatch(
+                request(url) %>%
+                req_method("GET") %>%
+                req_perform()
+                ,
+                httr2_http_404 = function(cnd) NULL
+            )
+
+            # res <- request(url) %>%
+            #         req_method("GET") %>%
+            #         # req_retry(max_tries = 5) %>%
+            #         req_perform()
+            #         # last_response()
+
+            if (!is.null(res)){
+                if (resp_status(res) == 200) {
+
+                    plan <- resp_body_html(res) %>%
+                            html_element("body") %>%
+                            html_elements("table.stat-resource_sheet.stat-resource_table") %>%
+                            html_table %>%
+                            bind_rows()
+
+
+                    info <- bind_rows(info, plan) %>% distinct()
+
+                }
+            }
+
+
+
+            info %>%
+            setNames(c("name", "value")) %>%
+            pivot_wider() %>%
+            mutate(across(everything(),
+                ~ ifelse(
+                    is.na(.) | . == "",
+                    "",
+                    strsplit(., "\n", fixed = TRUE)
+                ))) %>%
+            jsonlite::write_json(
+                path = dest,
+                pretty = TRUE,
+                auto_unbox = TRUE
+            )
+
+        })
+
+    })
+
+}
+
+
+args <- commandArgs(trailingOnly = T)
+
+# root_dir <- args[1]
+root_dir <- "./resource"
+
+
+url <- "https://www.soumu.go.jp/main_content/000675143.xlsx"
+
+tmp <- tempfile(fileext = ".xlsx")
+
+request(url) |>
+  req_retry(max_tries = 3) |>
+  req_timeout(60) |>
+  req_perform(path = tmp)
+
+df <- readxl::read_excel(tmp, sheet = "既に終了しているもの", col_type = "text", skip = 2) %>%
+      setNames(c("govname","statname","cycle","category","last_approve_date","history","memo")) %>%
+        dplyr::mutate(
+            last_approve_date_num = suppressWarnings(as.numeric(last_approve_date)),
+            last_approve_date = dplyr::case_when(
+            last_approve_date %in% c("-", "－") ~ NA_character_,
+            !is.na(last_approve_date_num) ~
+                format(
+                as.Date(last_approve_date_num, origin = "1899-12-30"),
+                "%Y/%m/%d"
+                ),
+            TRUE ~ last_approve_date
+            )
+        ) %>%
+        dplyr::select(-last_approve_date_num)
+      
+
+sl <- read_csv(glue("{root_dir}/statlist.csv"), col_types = cols(.default = "c"))
+
+
+df %>%
+left_join(sl, by = c("govname","statname")) %>%
+filter(!is.na(statcode)) %>%
+select(statcode, govname, statname, last_approve_date, memo) %>%
+readr::write_excel_csv(glue("{root_dir}/discontinued_surveys.csv"), quote = "all")
+
+
+
+
