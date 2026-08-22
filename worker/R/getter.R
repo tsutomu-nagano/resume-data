@@ -391,7 +391,7 @@ mutate(new = purrr::pmap(
     list(statcode, statdispids),
     function(statcode, statdispids){
 
-        print(glue("get meta of statcode : {statcode} - start"))
+        print(glue("get meta of statcode : {statcode} / {nrow(statdispids)}- start"))
 
         temp_dir <- glue("{root_dir}/temp/meta/{statcode}")
         if (dir.exists(temp_dir)){unlink(temp_dir, recursive = TRUE, force = TRUE)}
