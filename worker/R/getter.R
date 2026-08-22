@@ -9,6 +9,13 @@ library(tidyr)
 library(stringr)
 library(digest)
 
+
+log_message <- function(message) {
+  print(glue(
+    "[{format(Sys.time(), '%Y-%m-%d %H:%M:%S')}] {message}"
+  ))
+}
+
 get_sacs <- function(limit = 10000){
 
     endpoint <- "http://data.e-stat.go.jp/lod/sparql/alldata/query"
@@ -290,7 +297,7 @@ meta_output <- function(statcode, src, name, type, selection){
 args <- commandArgs(trailingOnly = T)
 
 appid <- Sys.getenv("APPID")
-root_dir <- args[1]
+# root_dir <- args[1]
 root_dir <- "./resource"
 
 # 統計調査の一覧
@@ -399,6 +406,7 @@ mutate(new = purrr::pmap(
 
         new <- statdispids %>% pull(STATDISPID) %>%
         purrr::map(function(statdispid){
+            log_message(statdipsid)
             # dest <- glue("{temp_dir}/{statdispid}.parquet")
             # getMetaList(appid, statdispid) %>% write_parquet(dest)
             getMetaList(appid, statdispid)
