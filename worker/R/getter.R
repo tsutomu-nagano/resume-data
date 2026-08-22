@@ -406,7 +406,7 @@ mutate(new = purrr::pmap(
 
         new <- statdispids %>% pull(STATDISPID) %>%
         purrr::map(function(statdispid){
-            log_message(statdipsid)
+            log_message(statdispid)
             # dest <- glue("{temp_dir}/{statdispid}.parquet")
             # getMetaList(appid, statdispid) %>% write_parquet(dest)
             getMetaList(appid, statdispid)
