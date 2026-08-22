@@ -329,8 +329,6 @@ with OCI(base64_wallet_text=encoded_data,
 
     # 集計事項の属性
     measure_attr = pd.read_csv(f"{src_dir}/measure_attributes.csv", dtype =str)
-
-    govlist = measure_attr[["govcode","govname"]].drop_duplicates()
     oci.sync_from_df(name = "measure_attribute", df = measure_attr, key_cols = ["name","attribute","value"])
 
 
