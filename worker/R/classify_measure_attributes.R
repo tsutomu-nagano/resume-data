@@ -132,5 +132,6 @@ purrr::map_dfr(function(name_){
 
 }) %>%
 distinct(name, attribute, value) %>%
+arrange(name, attribute, value) %>%
 write_excel_csv(dest, quote = "all")
 
