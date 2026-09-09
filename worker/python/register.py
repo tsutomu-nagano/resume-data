@@ -337,7 +337,20 @@ with OCI(base64_wallet_text=encoded_data,
 
     oci.insert_from_df(name = "dimensionlist", df = dimensions_base[["class_name"]].drop_duplicates())
     oci.insert_from_df(name = "table_dimension", df = dimensions_base[["STATDISPID","class_name"]].drop_duplicates())
-    oci.insert_from_df(name = "dimension_item", df = dimensions_base[["class_name","name"]].fillna("NA").drop_duplicates(), batch_size = 100000)
+    dimension_items = (
+        dimensions_base[["class_name", "name"]]
+        .fillna("NA")
+        .drop_duplicates()
+        .assign(search_name=lambda df: df["name"])
+    )
+    oci.insert_from_df(name = "dimension_item", df = dimension_items, batch_size = 100000)
+
+    # コミット済みの検索用文字列をOracle Textインデックスに反映
+    with oci.connection.cursor() as cursor:
+        cursor.callproc(
+            "CTX_DDL.SYNC_INDEX",
+            ["STAT_META_ADMIN.IDX_DIMENSION_ITEM_SEARCH_NAME"],
+        )
 
     registered_table_ids = oci.select("tablelist")[["STATDISPID"]].drop_duplicates()
     regions_base = (
@@ -389,7 +402,6 @@ with OCI(base64_wallet_text=encoded_data,
 # }) %>% bind_rows() %>%
 # distinct() %>%
 # dbWriteTable(con, "dimension_item", ., append = TRUE, row.names = FALSE)
-
 
 
 
