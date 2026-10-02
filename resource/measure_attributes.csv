@@ -339,8 +339,6 @@
 "公的年金-恩給受給者のいる世帯の割合","statistic","ratio"
 "公的年金-恩給受給者のいる世帯の１世帯当たり平均所得金額","statistic","mean"
 "公的年金・恩給受給者数－受給割合","statistic","ratio"
-"公的年金－恩給を受給している高齢者世帯数の構成割合","statistic","ratio"
-"公的年金－恩給受給者のいる世帯の１世帯当たり平均所得金額","statistic","mean"
 "再来患者の平均診療間隔","statistic","mean"
 "再来患者の平均診療間隔の年次推移","statistic","mean"
 "再来患者の平均診療間隔（患者住所地）","statistic","mean"
