@@ -1,3 +1,11 @@
+library(httr2)
+library(rvest)
+library(glue)
+library(dplyr)
+library(stringr)
+library(readr)
+library(tidyr)
+
 get_response <- function(url) {
 
   request(url) %>%
