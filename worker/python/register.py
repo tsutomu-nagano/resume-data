@@ -343,7 +343,7 @@ with OCI(base64_wallet_text=encoded_data,
         .drop_duplicates()
         .assign(search_name=lambda df: df["name"])
     )
-    oci.insert_from_df(name = "dimension_item", df = dimension_items, batch_size = 100000)
+    oci.insert_from_df(name = "dimension_item", df = dimension_items, batch_size = 10000)
 
 
     registered_table_ids = oci.select("tablelist")[["STATDISPID"]].drop_duplicates()
