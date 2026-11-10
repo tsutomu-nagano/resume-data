@@ -282,6 +282,11 @@ with OCI(base64_wallet_text=encoded_data,
         dimensions.append(
                 meta.pipe(lambda df: df[df["class_type"].str.startswith("cat")]) \
                     .pipe(select, names = ["STATDISPID", "class_name", "^name$"]) \
+                    .assign(
+                        class_name=lambda df: df["class_name"]
+                            .str.replace(r"^[\(（][A-Za-z0-9_-]+[\)）]\s*", "", regex=True)
+                            .str.strip()
+                        )
                     .drop_duplicates()
         )
                         
