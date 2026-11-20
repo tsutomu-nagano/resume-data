@@ -226,8 +226,6 @@
 "事業場割合","statistic","ratio"
 "事業従事者1人当たり付加価値額","basis","per_person"
 "事業従事者数（前年比）","comparison","year_over_year"
-"事業所割合","statistic","ratio"
-"事業所割合（総合工事業）","statistic","ratio"
 "事業所割合（総合工事調査）","statistic","ratio"
 "事業所数　前回比","comparison","previous_period"
 "事業所構成比","statistic","ratio"
